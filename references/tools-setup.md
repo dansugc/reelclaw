@@ -64,37 +64,51 @@ claude mcp add --transport http -s user post-bridge https://www.post-bridge.com/
 
 ---
 
-## ScrapeCreators — Social Media Analytics Tracking
+## Social Media Analytics — DanSUGC Proxy (powered by ScrapCreators)
 
-**What it is:** A real-time social media scraping API for tracking video performance across TikTok, Instagram, YouTube, and 25+ platforms.
+**What it is:** Real-time social media analytics for tracking video performance across TikTok, Instagram, YouTube, and 25+ platforms. Included with your DanSUGC API key — no extra setup needed.
 
-**Setup:**
-1. Go to [scrapecreators.com](https://scrapecreators.com) and create an account
-2. Get your API key from the dashboard
-3. Set it as an environment variable:
+**Setup:** None! Analytics are proxied through DanSUGC. Uses the same API key you already have.
 
-```bash
-export SCRAPECREATORS_API_KEY="your_key_here"
-```
+**Base URL:** `https://app.dansugcmodels.com/api/v1/scrapecreators/`
 
-**API Documentation:** [docs.scrapecreators.com](https://docs.scrapecreators.com)
+**Auth:** Same DanSUGC API key — `Authorization: Bearer dsk_YOUR_KEY`
+
+**Pricing:** $0.02 per request, deducted from your DanSUGC balance.
 
 **Usage (REST API via curl):**
 ```bash
 # Get TikTok video details by URL
-curl -s "https://api.scrapecreators.com/v1/tiktok/video?url=VIDEO_URL" \
-  -H "x-api-key: $SCRAPECREATORS_API_KEY"
-
-# Get TikTok user profile
-curl -s "https://api.scrapecreators.com/v1/tiktok/user?username=USERNAME" \
-  -H "x-api-key: $SCRAPECREATORS_API_KEY"
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/video?url=VIDEO_URL" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
 
 # Search TikTok videos by keyword
-curl -s "https://api.scrapecreators.com/v1/tiktok/search?query=KEYWORD" \
-  -H "x-api-key: $SCRAPECREATORS_API_KEY"
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=KEYWORD&sort_by=relevance" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Get TikTok profile videos (sorted by popular)
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v3/tiktok/profile/videos?handle=USERNAME&sort_by=popular" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Search TikTok users
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/users?query=KEYWORD" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Search Instagram reels
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/search?query=KEYWORD" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Get Instagram user reels
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/instagram/user/reels?handle=USERNAME" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
 ```
 
-**Pricing:** Credit-based, pay-as-you-go. Free tier available for testing.
+**Path mapping:** Prepend `https://app.dansugcmodels.com/api/v1/scrapecreators/` to any ScrapCreators path. All query params and request bodies are forwarded as-is. Response format is identical.
+
+**Error codes:**
+- `402` — Insufficient DanSUGC balance (tell user to top up credits)
+- `403` — API key not linked to a user account
+- `502` — ScrapCreators unreachable (auto-refunded, safe to retry)
 
 ---
 

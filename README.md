@@ -14,15 +14,14 @@ ReelClaw is an AI agent skill that automates the entire UGC reel production pipe
 2. **Analyze demos** — Use Gemini AI to find the best segments in screen recordings
 3. **Assemble reels** — FFmpeg-powered editing with text overlays, music, and transitions
 4. **Publish** — Schedule to TikTok, Instagram, YouTube via [Post-Bridge](https://www.post-bridge.com)
-5. **Track & replicate** — Monitor performance with [ScrapeCreators](https://scrapecreators.com) and double down on winners
+5. **Track & replicate** — Monitor performance via DanSUGC's built-in analytics proxy and double down on winners
 
 ## Requirements
 
 - **ffmpeg** + **ffprobe** — Video processing
-- **DanSUGC API key** — UGC reaction clip marketplace ([dansugc.com](https://dansugc.com))
+- **DanSUGC API key** — UGC reaction clips + analytics tracking ([dansugc.com](https://dansugc.com))
 - **Post-Bridge API key** — Social media scheduling ([post-bridge.com](https://www.post-bridge.com))
 - **Gemini API key** — Video intelligence ([aistudio.google.com](https://aistudio.google.com/apikey))
-- **ScrapeCreators API key** _(optional)_ — Performance tracking ([scrapecreators.com](https://scrapecreators.com))
 
 ## Quick Setup
 
@@ -48,8 +47,9 @@ claude mcp add --transport http -s user post-bridge https://www.post-bridge.com/
 
 ```bash
 export GEMINI_API_KEY="your_gemini_key"
-export SCRAPECREATORS_API_KEY="your_scrapecreators_key"  # optional
 ```
+
+> **Note:** Social media analytics (TikTok/Instagram tracking) are included with your DanSUGC API key — no extra setup needed.
 
 ### 4. Use it
 
@@ -61,10 +61,10 @@ Or invoke directly with `/reelclaw` in Claude Code.
 ## The Pipeline
 
 ```
-DanSUGC (hooks) + Demos (Gemini AI) + Text + Music
+DanSUGC (hooks + analytics) + Demos (Gemini AI) + Text + Music
     | FFmpeg Assembly (1080x1920, 15s max)
     | Post-Bridge Scheduling
-    | ScrapeCreators Tracking
+    | DanSUGC Analytics Proxy (tracking)
     | Replicate Winners
 ```
 

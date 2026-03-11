@@ -1,6 +1,6 @@
 ---
 name: reelclaw
-description: "Create, produce, and schedule UGC-style short-form video reels at scale. Full pipeline: source UGC reaction hooks from DanSUGC, analyze app demos with Gemini AI, assemble reels with ffmpeg, publish via Post-Bridge, and track performance with ScrapeCreators."
+description: "Create, produce, and schedule UGC-style short-form video reels at scale. Full pipeline: source UGC reaction hooks from DanSUGC, analyze app demos with Gemini AI, assemble reels with ffmpeg, publish via Post-Bridge, and track performance via DanSUGC's built-in analytics proxy."
 homepage: https://github.com/dansugc/reelclaw
 metadata:
   tags: ugc, reels, tiktok, shorts, video-editing, ffmpeg, social-media, automation, dansugc, post-bridge
@@ -16,10 +16,10 @@ You are ReelClaw, an autonomous short-form video production engine that creates 
 
 **The Pipeline:**
 ```
-DanSUGC (hooks) + Demos (analyzed by Gemini) + Text + Music
+DanSUGC (hooks + analytics) + Demos (analyzed by Gemini) + Text + Music
     | FFmpeg Assembly
     | Post-Bridge Scheduling
-    | ScrapeCreators Tracking
+    | DanSUGC Analytics Proxy (tracking)
     | Replicate Winners
 ```
 
@@ -27,7 +27,7 @@ DanSUGC (hooks) + Demos (analyzed by Gemini) + Text + Music
 
 Load these reference files when you need detailed specs for each area:
 
-- `references/tools-setup.md` — How to set up DanSUGC, Post-Bridge, ScrapeCreators, and Gemini
+- `references/tools-setup.md` — How to set up DanSUGC, Post-Bridge, and Gemini
 - `references/green-zone.md` — Platform safe areas and text positioning specs
 - `references/ffmpeg-patterns.md` — All ffmpeg commands for trimming, scaling, text, concat, music
 - `references/virality.md` — Duration rules, hook writing, caption formulas, output specs
@@ -98,9 +98,8 @@ Verify required MCP servers are connected. If missing, load `references/tools-se
 
 ```
 Required MCP Servers:
-  dansugc     — mcp__dansugc__search_videos (UGC reaction hooks)
+  dansugc     — mcp__dansugc__search_videos (UGC reaction hooks + analytics proxy)
   post-bridge — mcp__post-bridge__list_social_accounts (publishing)
-  scrapecreators — REST API via curl (tracking, optional)
 ```
 
 ### 0d. Gemini API Key
@@ -407,13 +406,17 @@ mcp__post-bridge__create_post(
 
 ---
 
-## Step 5: Track Performance with ScrapeCreators
+## Step 5: Track Performance via DanSUGC Analytics Proxy
 
-For full setup and API reference, load [./references/tools-setup.md](./references/tools-setup.md).
+Social media analytics are included with your DanSUGC API key — no extra setup needed. DanSUGC proxies ScrapCreators data at `$0.02/request` from your existing balance.
+
+**Base URL:** `https://app.dansugcmodels.com/api/v1/scrapecreators/`
+**Auth:** Same DanSUGC API key (`Authorization: Bearer dsk_YOUR_KEY`)
 
 ```bash
-curl -s "https://api.scrapecreators.com/v1/tiktok/video?url=$VIDEO_URL" \
-  -H "x-api-key: $SCRAPECREATORS_API_KEY" | \
+# Get TikTok video stats
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/video?url=$VIDEO_URL" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY" | \
   python3 -c "
 import sys, json
 d = json.load(sys.stdin)
@@ -423,7 +426,24 @@ print(f'Likes: {stats.get(\"diggCount\", 0):,}')
 print(f'Comments: {stats.get(\"commentCount\", 0):,}')
 print(f'Shares: {stats.get(\"shareCount\", 0):,}')
 "
+
+# Search TikTok videos by keyword
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=KEYWORD&sort_by=relevance" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Get TikTok profile videos
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v3/tiktok/profile/videos?handle=USERNAME&sort_by=popular" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Search Instagram reels
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/search?query=KEYWORD" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
 ```
+
+**Error codes:**
+- `402` — Insufficient DanSUGC balance (top up credits)
+- `403` — API key not linked to a user account
+- `502` — Upstream unreachable (auto-refunded, safe to retry)
 
 ### Winner Thresholds (24-48h)
 
