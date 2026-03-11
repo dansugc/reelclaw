@@ -15,6 +15,8 @@ ReelClaw is an AI agent skill that automates the entire UGC reel production pipe
 3. **Assemble reels** — FFmpeg-powered editing with text overlays, music, and transitions
 4. **Publish** — Schedule to TikTok, Instagram, YouTube via [Post-Bridge](https://www.post-bridge.com)
 5. **Track & replicate** — Monitor performance via DanSUGC's built-in analytics proxy and double down on winners
+6. **Format research** — Find viral format ideas in any niche by analyzing top TikTok/Instagram content
+7. **Hook research** — Discover proven text hooks from high-performing videos in your niche
 
 ## Requirements
 
@@ -55,6 +57,10 @@ export GEMINI_API_KEY="your_gemini_key"
 
 Tell your AI agent:
 > "Use ReelClaw to create 5 UGC reels for my app using shocked reaction hooks"
+
+> "Find me format ideas for beef liver supplements on TikTok"
+
+> "Find hooks for my meditation app"
 
 Or invoke directly with `/reelclaw` in Claude Code.
 

@@ -1,6 +1,6 @@
 ---
 name: reelclaw
-description: "Create, produce, and schedule UGC-style short-form video reels at scale. Full pipeline: source UGC reaction hooks from DanSUGC, analyze app demos with Gemini AI, assemble reels with ffmpeg, publish via Post-Bridge, and track performance via DanSUGC's built-in analytics proxy."
+description: "Create, produce, and schedule UGC-style short-form video reels at scale. Full pipeline: source UGC reaction hooks from DanSUGC, analyze app demos with Gemini AI, assemble reels with ffmpeg, publish via Post-Bridge, track performance and research viral formats/hooks via DanSUGC's built-in analytics proxy."
 homepage: https://github.com/dansugc/reelclaw
 metadata:
   tags: ugc, reels, tiktok, shorts, video-editing, ffmpeg, social-media, automation, dansugc, post-bridge
@@ -460,6 +460,159 @@ curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/
 2. Same text style + same demo angle
 3. Same music + spread across accounts
 4. Search for more clips: `mcp__dansugc__search_videos(emotion="shocked", min_virality=70)`
+
+---
+
+## Step 6: Format Research — Find Viral Formats for Any Niche
+
+When users ask for format ideas (e.g., "find me format ideas for beef liver supplements on TikTok"), use the DanSUGC analytics proxy to research what's working in that niche across TikTok and Instagram.
+
+### 6a. Search for Niche Content
+
+Search TikTok and Instagram for top-performing content in the user's niche:
+
+```bash
+# Search TikTok for niche keywords
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=NICHE_KEYWORD&sort_by=relevance" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Search Instagram reels for same niche
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/search?query=NICHE_KEYWORD" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+```
+
+**Run multiple keyword variations** to cast a wider net. For example, for "beef liver supplements":
+- `beef liver supplement`
+- `beef liver capsules`
+- `organ supplements`
+- `liver king` (known creators in the niche)
+- `desiccated liver`
+
+### 6b. Find Top Creators in the Niche
+
+Identify creators who are crushing it, then pull their most popular videos:
+
+```bash
+# Search for creators in the niche
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/users?query=NICHE_KEYWORD" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Get their top-performing videos
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v3/tiktok/profile/videos?handle=CREATOR_USERNAME&sort_by=popular" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Get Instagram creator reels
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/instagram/user/reels?handle=CREATOR_USERNAME" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+```
+
+### 6c. Analyze & Present Format Ideas
+
+From the search results, extract and present **4-5 distinct format ideas**. For each format:
+
+```markdown
+### Format [N]: [Format Name]
+
+**Description:** What the format looks like and how it works
+**Example:** [Link or description of a top-performing video using this format]
+**Stats:** [Views, likes, engagement rate from the search results]
+**Why it works:** [Brief psychology — why this format resonates]
+**How to replicate with ReelClaw:**
+  - Hook type: [emotion — shocked, crying, etc.]
+  - Text hook style: [e.g., "When..." question, bold statement, statistic]
+  - Demo content: [what to show in the demo portion]
+  - Music vibe: [energetic, moody, trending sound]
+```
+
+### 6d. Format Research Strategy
+
+**Search in this order for best results:**
+
+1. **Broad niche search** — `keyword search` for the main niche term
+2. **Specific product search** — `keyword search` for the exact product/brand
+3. **Creator discovery** — `user search` to find niche influencers
+4. **Creator deep-dive** — `profile videos sorted by popular` for top 2-3 creators
+5. **Cross-platform** — Repeat key searches on Instagram for format diversity
+
+**What to look for in results:**
+- Videos with unusually high engagement (likes/views ratio > 10%)
+- Recurring formats across multiple creators (validates the format works)
+- Content styles: UGC reactions, before/after, POV, tutorials, testimonials, unboxing, "day in my life"
+- Hook patterns: text overlays, opening lines, visual hooks
+- Duration sweet spots in the niche
+
+---
+
+## Step 7: Hook Research — Find Winning Text Hooks
+
+When users ask for hook ideas, use the DanSUGC analytics proxy to find text hooks proven to work in the niche.
+
+### 7a. Search for Hook Inspiration
+
+```bash
+# Search TikTok for niche content — hooks live in video descriptions/captions
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=NICHE_KEYWORD&sort_by=relevance" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Search with emotional angle keywords
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=NICHE+relatable&sort_by=relevance" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+
+# Instagram reels for different hook styles
+curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/search?query=NICHE_KEYWORD" \
+  -H "Authorization: Bearer $DANSUGC_API_KEY"
+```
+
+### 7b. Extract & Categorize Hooks
+
+From the search results, extract text hooks from video descriptions, captions, and titles. Group them by type:
+
+| Category | Pattern | Example |
+|----------|---------|---------|
+| **"When..." hooks** | When [relatable situation]... | "When you've tried everything but nothing works" |
+| **POV hooks** | POV: [scenario] | "POV: you finally tried organ supplements" |
+| **Statistic hooks** | [Number] [claim] | "90% of people are deficient in this" |
+| **Question hooks** | [Provocative question]? | "Why is nobody talking about this?" |
+| **Confession hooks** | I [honest admission] | "I used to think supplements were a scam" |
+| **"Nobody..." hooks** | Nobody talks about [truth] | "Nobody tells you this about iron deficiency" |
+| **Challenge hooks** | [Dare or challenge] | "Try this for 30 days and watch what happens" |
+| **Before/After hooks** | [Before state] → [After state] | "Day 1 vs Day 30 on beef liver" |
+
+### 7c. Present Hook Ideas
+
+For each hook, provide:
+
+```markdown
+### Hook [N]: "[The hook text]"
+
+**Category:** [Hook type from table above]
+**Inspired by:** [Video from search results with stats]
+**Emotion:** [What UGC reaction to pair with — shocked, curious, crying, etc.]
+**Text overlay format:**
+  Line 1: [first line of text]
+  Line 2: [second line, if needed]
+**Matching caption:**
+  [Full caption including hashtags]
+```
+
+### 7d. Hook Research Strategy
+
+**To find hooks that match a specific format:**
+1. Search for the format keyword (e.g., "supplement review TikTok")
+2. Look at the top 10-20 results
+3. Extract the first line of each caption — this is usually the hook
+4. Cross-reference with engagement: hooks from high-performing videos are proven
+
+**To find hooks for a specific brand/product:**
+1. Search for the brand name directly
+2. Search for the product category + emotional keywords
+3. Search for competitor brand names
+
+**Hook quality signals:**
+- High engagement ratio (likes/views > 10%)
+- Many comments (comments indicate the hook triggered a response)
+- Hook text matches the emotional tone of the video
+- Short and scannable (3-7 words per line, max 3 lines)
 
 ---
 
