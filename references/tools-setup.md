@@ -23,6 +23,12 @@ claude mcp add --transport http -s user dansugc https://dansugc.com/api/mcp \
 - `mcp__dansugc__purchase_videos` — Purchase videos (deducts credits, returns download URLs)
 - `mcp__dansugc__list_purchases` — List previously purchased videos
 - `mcp__dansugc__get_balance` — Check remaining credits
+- `mcp__dansugc__tiktok_search_videos` — Search TikTok videos by keyword
+- `mcp__dansugc__tiktok_user_videos` — Get a TikTok user's videos
+- `mcp__dansugc__tiktok_search_users` — Search for TikTok users
+- `mcp__dansugc__instagram_search_reels` — Search Instagram reels
+- `mcp__dansugc__instagram_user_reels` — Get an Instagram user's reels
+- `mcp__dansugc__scrapecreators_raw` — Raw proxy to any ScrapCreators endpoint
 
 **Important:** You must **purchase** videos before downloading them. The `purchase_videos` tool returns download URLs after successful purchase. Always check your balance first with `get_balance`.
 
@@ -68,39 +74,37 @@ claude mcp add --transport http -s user post-bridge https://www.post-bridge.com/
 
 **What it is:** Real-time social media analytics for tracking video performance across TikTok, Instagram, YouTube, and 25+ platforms. Included with your DanSUGC API key — no extra setup needed.
 
-**Setup:** None! Analytics are proxied through DanSUGC. Uses the same API key you already have.
-
-**Base URL:** `https://app.dansugcmodels.com/api/v1/scrapecreators/`
-
-**Auth:** Same DanSUGC API key — `Authorization: Bearer dsk_YOUR_KEY`
+**Setup:** None! Analytics are proxied through DanSUGC. Uses the same MCP server you already have — no extra configuration needed.
 
 **Pricing:** $0.02 per request, deducted from your DanSUGC balance.
 
-**Usage (REST API via curl):**
-```bash
-# Get TikTok video details by URL
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/video?url=VIDEO_URL" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+**Available MCP Tools:**
+- `mcp__dansugc__tiktok_search_videos` — Search TikTok videos by keyword
+- `mcp__dansugc__tiktok_user_videos` — Get a TikTok user's videos
+- `mcp__dansugc__tiktok_search_users` — Search for TikTok users
+- `mcp__dansugc__instagram_search_reels` — Search Instagram reels
+- `mcp__dansugc__instagram_user_reels` — Get an Instagram user's reels
+- `mcp__dansugc__scrapecreators_raw` — Raw proxy to any ScrapCreators endpoint
 
+**Usage (MCP tool calls):**
+```
 # Search TikTok videos by keyword
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=KEYWORD&sort_by=relevance" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__tiktok_search_videos(query="KEYWORD", sort_by="relevance")
 
-# Get TikTok profile videos (sorted by popular)
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v3/tiktok/profile/videos?handle=USERNAME&sort_by=popular" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+# Get a TikTok user's videos (sorted by popular)
+mcp__dansugc__tiktok_user_videos(handle="USERNAME", sort_by="popular")
 
-# Search TikTok users
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/users?query=KEYWORD" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+# Search for TikTok users
+mcp__dansugc__tiktok_search_users(query="KEYWORD")
 
 # Search Instagram reels
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/search?query=KEYWORD" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__instagram_search_reels(query="KEYWORD")
 
-# Get Instagram user reels
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/instagram/user/reels?handle=USERNAME" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+# Get an Instagram user's reels
+mcp__dansugc__instagram_user_reels(handle="USERNAME")
+
+# Raw proxy — use for any ScrapCreators endpoint not covered above
+mcp__dansugc__scrapecreators_raw(path="v1/tiktok/video", params={"url": "VIDEO_URL"})
 ```
 
 **Path mapping:** Prepend `https://app.dansugcmodels.com/api/v1/scrapecreators/` to any ScrapCreators path. All query params and request bodies are forwarded as-is. Response format is identical.

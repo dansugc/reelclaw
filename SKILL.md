@@ -408,36 +408,20 @@ mcp__post-bridge__create_post(
 
 ## Step 5: Track Performance via DanSUGC Analytics Proxy
 
-Social media analytics are included with your DanSUGC API key — no extra setup needed. DanSUGC proxies ScrapCreators data at `$0.02/request` from your existing balance.
+Social media analytics are included with your DanSUGC API key — no extra setup needed. DanSUGC proxies ScrapCreators data at `$0.02/request` from your existing balance. Auth is handled automatically by the MCP server.
 
-**Base URL:** `https://app.dansugcmodels.com/api/v1/scrapecreators/`
-**Auth:** Same DanSUGC API key (`Authorization: Bearer dsk_YOUR_KEY`)
-
-```bash
+```
 # Get TikTok video stats
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/video?url=$VIDEO_URL" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY" | \
-  python3 -c "
-import sys, json
-d = json.load(sys.stdin)
-stats = d.get('data', {}).get('stats', {})
-print(f'Views: {stats.get(\"playCount\", 0):,}')
-print(f'Likes: {stats.get(\"diggCount\", 0):,}')
-print(f'Comments: {stats.get(\"commentCount\", 0):,}')
-print(f'Shares: {stats.get(\"shareCount\", 0):,}')
-"
+mcp__dansugc__scrapecreators_raw(path="v1/tiktok/video", params={url: "VIDEO_URL"})
 
 # Search TikTok videos by keyword
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=KEYWORD&sort_by=relevance" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__tiktok_search_videos(query="KEYWORD")
 
-# Get TikTok profile videos
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v3/tiktok/profile/videos?handle=USERNAME&sort_by=popular" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+# Get TikTok profile videos (sorted by popular)
+mcp__dansugc__tiktok_user_videos(handle="USERNAME", sort_by="popular")
 
 # Search Instagram reels
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/search?query=KEYWORD" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__instagram_search_reels(query="KEYWORD")
 ```
 
 **Error codes:**
@@ -465,20 +449,18 @@ curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/
 
 ## Step 6: Format Research — Find Viral Formats for Any Niche
 
-When users ask for format ideas (e.g., "find me format ideas for beef liver supplements on TikTok"), use the DanSUGC analytics proxy to research what's working in that niche across TikTok and Instagram.
+When users ask for format ideas (e.g., "find me format ideas for beef liver supplements on TikTok"), use the DanSUGC MCP tools to research what's working in that niche across TikTok and Instagram.
 
 ### 6a. Search for Niche Content
 
 Search TikTok and Instagram for top-performing content in the user's niche:
 
-```bash
+```
 # Search TikTok for niche keywords
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=NICHE_KEYWORD&sort_by=relevance" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__tiktok_search_videos(query="NICHE_KEYWORD")
 
 # Search Instagram reels for same niche
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/search?query=NICHE_KEYWORD" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__instagram_search_reels(query="NICHE_KEYWORD")
 ```
 
 **Run multiple keyword variations** to cast a wider net. For example, for "beef liver supplements":
@@ -492,18 +474,15 @@ curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/
 
 Identify creators who are crushing it, then pull their most popular videos:
 
-```bash
+```
 # Search for creators in the niche
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/users?query=NICHE_KEYWORD" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__tiktok_search_users(query="NICHE_KEYWORD")
 
 # Get their top-performing videos
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v3/tiktok/profile/videos?handle=CREATOR_USERNAME&sort_by=popular" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__tiktok_user_videos(handle="CREATOR_USERNAME", sort_by="popular")
 
 # Get Instagram creator reels
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/instagram/user/reels?handle=CREATOR_USERNAME" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__instagram_user_reels(handle="CREATOR_USERNAME")
 ```
 
 ### 6c. Analyze & Present Format Ideas
@@ -545,22 +524,19 @@ From the search results, extract and present **4-5 distinct format ideas**. For 
 
 ## Step 7: Hook Research — Find Winning Text Hooks
 
-When users ask for hook ideas, use the DanSUGC analytics proxy to find text hooks proven to work in the niche.
+When users ask for hook ideas, use the DanSUGC MCP tools to find text hooks proven to work in the niche.
 
 ### 7a. Search for Hook Inspiration
 
-```bash
+```
 # Search TikTok for niche content — hooks live in video descriptions/captions
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=NICHE_KEYWORD&sort_by=relevance" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__tiktok_search_videos(query="NICHE_KEYWORD")
 
 # Search with emotional angle keywords
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v1/tiktok/search/keyword?query=NICHE+relatable&sort_by=relevance" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__tiktok_search_videos(query="NICHE relatable")
 
 # Instagram reels for different hook styles
-curl -s "https://app.dansugcmodels.com/api/v1/scrapecreators/v2/instagram/reels/search?query=NICHE_KEYWORD" \
-  -H "Authorization: Bearer $DANSUGC_API_KEY"
+mcp__dansugc__instagram_search_reels(query="NICHE_KEYWORD")
 ```
 
 ### 7b. Extract & Categorize Hooks
