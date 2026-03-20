@@ -31,6 +31,7 @@ Load these reference files when you need detailed specs for each area:
 - `references/green-zone.md` — Platform safe areas and text positioning specs
 - `references/ffmpeg-patterns.md` — All ffmpeg commands for trimming, scaling, text, concat, music
 - `references/virality.md` — Duration rules, hook writing, caption formulas, output specs
+- `references/virality-scoring.md` — Gemini-powered virality scoring (single + batch)
 
 ## Critical Rules
 
@@ -363,7 +364,59 @@ ffprobe -v quiet -print_format json -show_entries format=duration "reel-final.mp
 
 ---
 
-## Step 4: Publish via Post-Bridge
+## Step 4: Virality Score (Gemini Video Analysis)
+
+Score reels before publishing using Gemini's video understanding. Upload the video to the Gemini File API, get a 0-100 virality score across 7 criteria. **Only publish reels scoring 70+.**
+
+For full scoring scripts (single + batch), prompt template, and improvement guide, load [./references/virality-scoring.md](./references/virality-scoring.md).
+
+### Quick Score (Single Reel)
+
+```bash
+# Upload to Gemini
+FILE_URI=$(curl -s -X POST \
+  "https://generativelanguage.googleapis.com/upload/v1beta/files?key=$GEMINI_API_KEY" \
+  -H "X-Goog-Upload-Command: start, upload, finalize" \
+  -H "X-Goog-Upload-Header-Content-Type: video/mp4" \
+  -H "Content-Type: video/mp4" \
+  --data-binary @"reel-final.mp4" | python3 -c "import sys,json; print(json.load(sys.stdin)['file']['uri'])")
+
+sleep 4  # Wait for processing
+
+# Score — returns JSON with overall_score + 7 sub-scores + improvement tips
+curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=$GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{...}"  # See references/virality-scoring.md for full prompt
+```
+
+### Score Criteria
+
+| Criterion | What It Measures |
+|-----------|-----------------|
+| **hook_strength** | Opening 1-3 seconds — does it stop the scroll? |
+| **emotional_impact** | Does it trigger relatability, shock, humor, empathy? |
+| **pacing_flow** | Tight cuts, no dead time, snappy feel? |
+| **text_readability** | Clear text, good positioning, high contrast? |
+| **scroll_stop_power** | Would someone stop mid-scroll on the first frame? |
+| **completion_likelihood** | Will viewers watch to the end? |
+| **shareability** | Would someone send this to a friend? |
+
+### Score Thresholds
+
+| Score | Action |
+|-------|--------|
+| **85+** | Publish immediately — prioritize for best account |
+| **70-84** | Publish — minor tweaks optional |
+| **55-69** | Rework hook or pacing before publishing |
+| **<55** | Re-edit significantly or discard |
+
+### Batch Score
+
+For scoring entire directories, use the Python batch scorer in [./references/virality-scoring.md](./references/virality-scoring.md). It handles uploads, rate limits, and outputs a ranked scorecard.
+
+---
+
+## Step 5: Publish via Post-Bridge
 
 For full setup instructions, load [./references/tools-setup.md](./references/tools-setup.md).
 
@@ -406,7 +459,7 @@ mcp__post-bridge__create_post(
 
 ---
 
-## Step 5: Track Performance via DanSUGC Analytics Proxy
+## Step 6: Track Performance via DanSUGC Analytics Proxy
 
 Social media analytics are included with your DanSUGC API key — no extra setup needed. DanSUGC proxies ScrapCreators data at `$0.02/request` from your existing balance. Auth is handled automatically by the MCP server.
 
@@ -447,7 +500,7 @@ mcp__dansugc__instagram_search_reels(query="KEYWORD")
 
 ---
 
-## Step 6: Format Research — Find Viral Formats for Any Niche
+## Step 7: Format Research — Find Viral Formats for Any Niche
 
 When users ask for format ideas (e.g., "find me format ideas for beef liver supplements on TikTok"), use the DanSUGC MCP tools to research what's working in that niche across TikTok and Instagram.
 
@@ -522,7 +575,7 @@ From the search results, extract and present **4-5 distinct format ideas**. For 
 
 ---
 
-## Step 7: Hook Research — Find Winning Text Hooks
+## Step 8: Hook Research — Find Winning Text Hooks
 
 When users ask for hook ideas, use the DanSUGC MCP tools to find text hooks proven to work in the niche.
 
