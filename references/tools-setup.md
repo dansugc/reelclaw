@@ -29,6 +29,7 @@ claude mcp add --transport http -s user dansugc https://dansugc.com/api/mcp \
 - `mcp__dansugc__instagram_search_reels` — Search Instagram reels
 - `mcp__dansugc__instagram_user_reels` — Get an Instagram user's reels
 - `mcp__dansugc__scrapecreators_raw` — Raw proxy to any ScrapCreators endpoint
+- **Posting tools** (requires Posting subscription): `check_posting_subscription`, `list_posting_accounts`, `create_post`, `list_posts`, `update_post`, `delete_post`, `get_posting_analytics`
 
 **Important:** You must **purchase** videos before downloading them. The `purchase_videos` tool returns download URLs after successful purchase. Always check your balance first with `get_balance`.
 
@@ -36,37 +37,64 @@ claude mcp add --transport http -s user dansugc https://dansugc.com/api/mcp \
 
 ---
 
-## Post-Bridge — Social Media Scheduling
+## DanSUGC Posting — TikTok & Instagram Publishing
 
-**What it is:** A social media scheduling API that publishes videos to TikTok, Instagram, YouTube, and more.
+**What it is:** Native social media scheduling built into DanSUGC. Same API key, same MCP server — no extra tools needed. Supports TikTok and Instagram.
 
-**Setup:**
-1. Go to [post-bridge.com](https://www.post-bridge.com) and create an account
-2. Connect your social media accounts (TikTok, Instagram, etc.)
-3. Go to **Settings -> API** and generate an API key (starts with `pb_live_`)
-4. Add the MCP server:
+**Requirements:**
+- Active DanSUGC Posting subscription (separate from B-Roll credits — activate at [dansugc.com/dashboard](https://dansugc.com/dashboard))
+- TikTok and/or Instagram accounts connected in your DanSUGC dashboard
 
-```bash
-claude mcp add --transport http -s user post-bridge https://www.post-bridge.com/api/mcp/mcp \
-  -H "Authorization: Bearer pb_live_YOUR_API_KEY_HERE"
-```
-
-5. Restart Claude Code after adding
+**No extra setup needed** — posting tools are included in the same DanSUGC MCP server you already have.
 
 **Available MCP Tools:**
-- `mcp__post-bridge__list_social_accounts` — List connected accounts with IDs
-- `mcp__post-bridge__create_post` — Create/schedule posts with media URLs
-- `mcp__post-bridge__list_posts` — List scheduled/published posts
-- `mcp__post-bridge__list_analytics` — View post performance analytics
-- `mcp__post-bridge__update_post` — Update scheduled posts (only scheduled, not drafts)
-- `mcp__post-bridge__delete_post` — Delete scheduled posts (only scheduled, not drafts)
+- `mcp__dansugc__check_posting_subscription` — Verify posting plan is active
+- `mcp__dansugc__list_posting_accounts` — List connected TikTok/Instagram accounts with IDs
+- `mcp__dansugc__create_post` — Create, schedule, or publish immediately
+- `mcp__dansugc__list_posts` — List all posts with status (draft/scheduled/published/failed)
+- `mcp__dansugc__update_post` — Update caption, scheduled time, or status
+- `mcp__dansugc__delete_post` — Delete a post
+- `mcp__dansugc__get_posting_analytics` — Cross-platform metrics (followers, views, engagement)
+- `mcp__dansugc__list_social_sets` — List account groupings
+- `mcp__dansugc__create_social_set` — Create a new account grouping
+
+**Usage:**
+```
+# Check subscription before posting
+mcp__dansugc__check_posting_subscription()
+
+# List connected accounts
+mcp__dansugc__list_posting_accounts()
+# → Returns: id, platform, username, followers, total_views
+
+# Schedule a post
+mcp__dansugc__create_post(
+  content="Hook text...\n\n#hashtag1 #hashtag2 #fyp",
+  media_urls=["PUBLIC_VIDEO_URL"],
+  account_ids=["ACCOUNT_ID"],
+  scheduled_for="2026-03-25T18:00:00Z",
+  timezone="America/New_York"
+)
+
+# Publish immediately
+mcp__dansugc__create_post(
+  content="Caption...",
+  media_urls=["PUBLIC_VIDEO_URL"],
+  account_ids=["ACCOUNT_ID"],
+  publish_now=true
+)
+
+# Check post status
+mcp__dansugc__list_posts()
+
+# View analytics
+mcp__dansugc__get_posting_analytics(range="30d")
+```
 
 **Key rules:**
-- ONE video per ONE account — distribute unique videos across accounts
-- Use `is_draft: true` for drafts, omit for scheduled posts
-- Videos need **public URLs** — use tmpfiles.org for temporary hosting (use `/dl/` prefix for direct download URLs)
-- Use `media_urls` parameter with public video URLs (the API downloads them)
-- Drafts cannot be updated or deleted via API — only scheduled posts can
+- ONE unique video per account — never post the same video to multiple accounts
+- Currently supports TikTok and Instagram only
+- Videos need a public URL — use tmpfiles.org for temporary hosting (use `/dl/` prefix)
 
 ---
 

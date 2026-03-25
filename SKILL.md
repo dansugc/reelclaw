@@ -1,13 +1,13 @@
 ---
 name: reelclaw
-description: "Create, produce, and schedule UGC-style short-form video reels at scale. Full pipeline: source UGC reaction hooks from DanSUGC, analyze app demos with Gemini AI, assemble reels with ffmpeg, publish via Post-Bridge, track performance and research viral formats/hooks via DanSUGC's built-in analytics proxy."
+description: "Create, produce, and publish UGC-style short-form video reels at scale. Full pipeline: source UGC reaction hooks from DanSUGC, analyze app demos with Gemini AI, assemble reels with ffmpeg, publish via DanSUGC Posting (TikTok + Instagram), track performance and research viral formats/hooks via DanSUGC's built-in analytics proxy."
 homepage: https://github.com/dansugc/reelclaw
 metadata:
-  tags: ugc, reels, tiktok, shorts, video-editing, ffmpeg, social-media, automation, dansugc, post-bridge
+  tags: ugc, reels, tiktok, instagram, shorts, video-editing, ffmpeg, social-media, automation, dansugc, dansugc-posting
   requires:
     bins: [ffmpeg, ffprobe, curl, python3]
     env: [GEMINI_API_KEY]
-    mcp: [dansugc, post-bridge]
+    mcp: [dansugc]
 ---
 
 # ReelClaw — UGC Reel Production Engine
@@ -16,9 +16,9 @@ You are ReelClaw, an autonomous short-form video production engine that creates 
 
 **The Pipeline:**
 ```
-DanSUGC (hooks + analytics) + Demos (analyzed by Gemini) + Text + Music
+DanSUGC (hooks + analytics + posting) + Demos (analyzed by Gemini) + Text + Music
     | FFmpeg Assembly
-    | Post-Bridge Scheduling
+    | DanSUGC Posting (TikTok + Instagram)
     | DanSUGC Analytics Proxy (tracking)
     | Replicate Winners
 ```
@@ -27,11 +27,18 @@ DanSUGC (hooks + analytics) + Demos (analyzed by Gemini) + Text + Music
 
 Load these reference files when you need detailed specs for each area:
 
-- `references/tools-setup.md` — How to set up DanSUGC, Post-Bridge, and Gemini
+- `references/tools-setup.md` — How to set up DanSUGC and Gemini
 - `references/green-zone.md` — Platform safe areas and text positioning specs
 - `references/ffmpeg-patterns.md` — All ffmpeg commands for trimming, scaling, text, concat, music
 - `references/virality.md` — Duration rules, hook writing, caption formulas, output specs
 - `references/virality-scoring.md` — Gemini-powered virality scoring (single + batch)
+
+### DanSUGC Posting API Reference
+
+If you get stuck with any posting operation, consult these resources:
+
+- **API docs (LLM-friendly):** https://dansugc.com/llms.txt
+- **Interactive docs:** https://dansugc.com/docs
 
 ## Critical Rules
 
@@ -99,8 +106,7 @@ Verify required MCP servers are connected. If missing, load `references/tools-se
 
 ```
 Required MCP Servers:
-  dansugc     — mcp__dansugc__search_videos (UGC reaction hooks + analytics proxy)
-  post-bridge — mcp__post-bridge__list_social_accounts (publishing)
+  dansugc — search_videos, purchase_videos, create_post, analytics (all-in-one)
 ```
 
 ### 0d. Gemini API Key
@@ -416,13 +422,29 @@ For scoring entire directories, use the Python batch scorer in [./references/vir
 
 ---
 
-## Step 5: Publish via Post-Bridge
+## Step 5: Publish via DanSUGC Posting
 
-For full setup instructions, load [./references/tools-setup.md](./references/tools-setup.md).
+DanSUGC handles TikTok and Instagram publishing natively — no third-party tools needed. Requires a **DanSUGC Posting subscription** (separate from B-Roll credits — check your dashboard).
 
-### 4a. Upload Videos
+### 5a. Check Subscription
 
-Videos need public URLs. Use tmpfiles.org for temporary hosting:
+```
+mcp__dansugc__check_posting_subscription()
+```
+
+If not subscribed, direct the user to [dansugc.com/dashboard](https://dansugc.com/dashboard) to activate a Posting plan.
+
+### 5b. List Connected Accounts
+
+```
+mcp__dansugc__list_posting_accounts()
+```
+
+Returns connected TikTok and Instagram accounts with their IDs, usernames, follower counts. Note the `id` for each account — needed when creating posts.
+
+### 5c. Upload Video (Get Public URL)
+
+Videos need a public URL. Use tmpfiles.org for temporary hosting:
 
 ```bash
 url=$(curl -s -F "file=@reel-final.mp4" https://tmpfiles.org/api/v1/upload | \
@@ -431,23 +453,25 @@ url=$(curl -s -F "file=@reel-final.mp4" https://tmpfiles.org/api/v1/upload | \
 echo "Public URL: $url"
 ```
 
-### 4b. Schedule Posts
+### 5d. Schedule or Publish Post
 
 ```
-mcp__post-bridge__create_post(
-  caption="Hook text...\n\nCaption body...\n\n#hashtag1 #hashtag2 #fyp",
-  social_accounts=[ACCOUNT_ID],
+mcp__dansugc__create_post(
+  content="Hook text...\n\nCaption body...\n\n#hashtag1 #hashtag2 #fyp",
   media_urls=["PUBLIC_VIDEO_URL"],
-  scheduled_at="2026-03-10T22:00:00Z"
+  account_ids=["ACCOUNT_ID"],
+  scheduled_for="2026-03-25T18:00:00Z",
+  timezone="America/New_York"
 )
 ```
+
+Set `publish_now=true` to post immediately instead of scheduling.
 
 **Distribution rules:**
 - ONE unique video per account — never post the same video to multiple accounts
 - Stagger posting times by 5 minutes between accounts
-- Drafts (`is_draft: true`) cannot be updated/deleted via API
 
-### 4c. Caption Formula
+### 5e. Caption Formula
 
 ```
 [Hook text — the emotional line from the video]
@@ -456,6 +480,14 @@ mcp__post-bridge__create_post(
 
 #hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5 #fyp
 ```
+
+### 5f. Verify Post Status
+
+```
+mcp__dansugc__list_posts()
+```
+
+Status values: `draft`, `scheduled`, `published`, `failed`.
 
 ---
 
@@ -659,8 +691,9 @@ For each hook, provide:
 - Always use two-pass: trim first with `-c copy`, then speed up with `setpts`
 - Never combine `-ss`/`-to` with `setpts` in a single pass
 
-**Drafts can't be updated/deleted in Post-Bridge:**
-- API limitation — drafts are immutable. Create a new scheduled post instead.
+**DanSUGC Posting returns 403 / subscription error:** User needs an active DanSUGC Posting subscription — go to dansugc.com/dashboard to subscribe.
+
+**Post stuck in failed state:** Use `mcp__dansugc__list_posts()` to check error details, then `mcp__dansugc__delete_post(id=...)` and recreate.
 
 **Text cut off by platform UI:**
 - Check Green Zone specs in [./references/green-zone.md](./references/green-zone.md)

@@ -13,7 +13,7 @@ ReelClaw is an AI agent skill that automates the entire UGC reel production pipe
 1. **Source hooks** — Search and purchase UGC reaction clips from [DanSUGC](https://dansugc.com)
 2. **Analyze demos** — Use Gemini AI to find the best segments in screen recordings
 3. **Assemble reels** — FFmpeg-powered editing with text overlays, music, and transitions
-4. **Publish** — Schedule to TikTok, Instagram, YouTube via [Post-Bridge](https://www.post-bridge.com)
+4. **Publish** — Schedule to TikTok & Instagram natively via [DanSUGC Posting](https://dansugc.com)
 5. **Track & replicate** — Monitor performance via DanSUGC's built-in analytics proxy and double down on winners
 6. **Format research** — Find viral format ideas in any niche by analyzing top TikTok/Instagram content
 7. **Hook research** — Discover proven text hooks from high-performing videos in your niche
@@ -21,8 +21,7 @@ ReelClaw is an AI agent skill that automates the entire UGC reel production pipe
 ## Requirements
 
 - **ffmpeg** + **ffprobe** — Video processing
-- **DanSUGC API key** — UGC reaction clips + analytics tracking ([dansugc.com](https://dansugc.com))
-- **Post-Bridge API key** — Social media scheduling ([post-bridge.com](https://www.post-bridge.com))
+- **DanSUGC API key** — UGC clips, analytics, and TikTok/Instagram posting ([dansugc.com](https://dansugc.com))
 - **Gemini API key** — Video intelligence ([aistudio.google.com](https://aistudio.google.com/apikey))
 
 ## Quick Setup
@@ -36,14 +35,12 @@ npx skills add dansugc/reelclaw --all
 ### 2. Connect MCP servers
 
 ```bash
-# DanSUGC — UGC reaction clips
+# DanSUGC — UGC reaction clips + analytics + posting (TikTok + Instagram)
 claude mcp add --transport http -s user dansugc https://dansugc.com/api/mcp \
   -H "Authorization: Bearer dsk_YOUR_API_KEY"
-
-# Post-Bridge — Social media scheduling
-claude mcp add --transport http -s user post-bridge https://www.post-bridge.com/api/mcp/mcp \
-  -H "Authorization: Bearer pb_live_YOUR_API_KEY"
 ```
+
+> DanSUGC handles everything — UGC clips, analytics, and posting to TikTok/Instagram. A Posting subscription is required for the publishing step.
 
 ### 3. Set environment variables
 
@@ -67,9 +64,9 @@ Or invoke directly with `/reelclaw` in Claude Code.
 ## The Pipeline
 
 ```
-DanSUGC (hooks + analytics) + Demos (Gemini AI) + Text + Music
+DanSUGC (hooks + analytics + posting) + Demos (Gemini AI) + Text + Music
     | FFmpeg Assembly (1080x1920, 15s max)
-    | Post-Bridge Scheduling
+    | DanSUGC Posting (TikTok + Instagram)
     | DanSUGC Analytics Proxy (tracking)
     | Replicate Winners
 ```
