@@ -31,7 +31,7 @@ claude mcp add --transport http -s user dansugc https://dansugc.com/api/mcp \
 - `mcp__dansugc__scrapecreators_raw` — Raw proxy to any ScrapCreators endpoint
 - **Posting tools** (requires Posting subscription): `check_posting_subscription`, `list_posting_accounts`, `create_post`, `list_posts`, `update_post`, `delete_post`, `get_posting_analytics`
 
-**Important:** You must **purchase** videos before downloading them. The `purchase_videos` tool returns download URLs after successful purchase. Always check your balance first with `get_balance`.
+**Important:** You must **purchase** videos before downloading them. The `purchase_videos` tool returns **storage URLs** (not dansugc.com URLs) in the `download_url` field. These are the ONLY valid download URLs. **Never construct dansugc.com download URLs** — paths like `/api/broll/download` are internal browser routes that require session cookies and will fail with API keys.
 
 **Pricing:** Credit-based. Each video costs credits. Check your balance before bulk purchases.
 

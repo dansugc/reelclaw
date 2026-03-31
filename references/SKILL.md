@@ -50,7 +50,6 @@ If you get stuck with any posting operation, consult these resources:
 6. **Always use Gemini 3.1 Flash Lite for video intelligence** — model: `gemini-3.1-flash-lite-preview`
 7. **Never expose API keys in output** — redact in logs, never print full keys
 8. **Purchase videos from DanSUGC before downloading** — users must purchase clips via the MCP tool before getting download URLs
-9. **NEVER construct dansugc.com URLs for downloading** — the only valid download URLs are the storage URLs returned by `mcp__dansugc__purchase_videos`. Do NOT fabricate URLs like `/api/broll/download`, `/api/v1/broll/download`, or any other dansugc.com download path. These are internal browser routes that require session cookies and will fail with API keys.
 
 ---
 
@@ -171,15 +170,11 @@ mcp__dansugc__search_videos(semantic_search="crying emotional reaction", min_vir
 2. **Review** results — check duration, emotion, virality score
 3. **Check balance** with `mcp__dansugc__get_balance`
 4. **Purchase** selected clips with `mcp__dansugc__purchase_videos`
-5. **Download** using the **storage URLs** returned in the purchase response's `download_url` field
+5. **Download** using the URLs returned from purchase
 
 ```bash
-# The download_url from purchase_videos is a STORAGE URL (e.g., https://storage.example.com/full/xyz.mp4)
-# It is NOT a dansugc.com URL. Never construct download URLs yourself.
-curl -L -o hook-clip.mp4 "DOWNLOAD_URL_FROM_PURCHASE_RESPONSE"
+curl -L -o hook-clip.mp4 "DOWNLOAD_URL_FROM_PURCHASE"
 ```
-
-**IMPORTANT:** If `purchase_videos` does not return a `download_url`, ask the user to check their DanSUGC dashboard. Do NOT attempt to guess or construct a download URL.
 
 ### Hook Selection Rules
 
