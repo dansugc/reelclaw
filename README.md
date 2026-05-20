@@ -10,9 +10,11 @@ npx skills add dansugc/reelclaw --all
 
 A 30-second talking-video produced end-to-end by the `/talking-video` workflow — ElevenLabs voiceover + CapCut-style auto-synced captions + lo-fi music underlay + UGC reactions + app demo cutaways. One JSON spec, one command, one finished MP4.
 
-<video src="https://github.com/dansugc/reelclaw/raw/main/assets/talking-video/examples/pcos_example.mp4" controls width="320"></video>
+[![Watch the example](assets/talking-video/examples/poster.jpg)](https://pub-70f9e589b1c640b49218874baf1c733f.r2.dev/pcos_04_kris_cycle_60_to_28.mp4)
 
-▶ [**Watch the example (open in new tab)**](https://github.com/dansugc/reelclaw/raw/main/assets/talking-video/examples/pcos_example.mp4)
+▶ [**Watch the 30s example →**](https://pub-70f9e589b1c640b49218874baf1c733f.r2.dev/pcos_04_kris_cycle_60_to_28.mp4)
+
+<video src="https://pub-70f9e589b1c640b49218874baf1c733f.r2.dev/pcos_04_kris_cycle_60_to_28.mp4" controls width="320"></video>
 
 *Real output from a 10-video PCOS Pal batch. The same pipeline shipped 20 AiPixo photo-app ads and 20 Ease quit-vaping ads from a single JSON spec each — see the [end-to-end example below](#example--talking-video-end-to-end).*
 
