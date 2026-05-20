@@ -6,6 +6,16 @@ UGC reel production engine for AI coding agents. Create scroll-stopping short-fo
 npx skills add dansugc/reelclaw --all
 ```
 
+## See it in action
+
+A 30-second talking-video produced end-to-end by the `/talking-video` workflow — ElevenLabs voiceover + CapCut-style auto-synced captions + lo-fi music underlay + UGC reactions + app demo cutaways. One JSON spec, one command, one finished MP4.
+
+<video src="https://github.com/dansugc/reelclaw/raw/main/assets/talking-video/examples/pcos_example.mp4" controls width="320"></video>
+
+▶ [**Watch the example (open in new tab)**](https://github.com/dansugc/reelclaw/raw/main/assets/talking-video/examples/pcos_example.mp4)
+
+*Real output from a 10-video PCOS Pal batch. The same pipeline shipped 20 AiPixo photo-app ads and 20 Ease quit-vaping ads from a single JSON spec each — see the [end-to-end example below](#example--talking-video-end-to-end).*
+
 ## What It Does
 
 ReelClaw is an AI agent skill that automates two distinct UGC pipelines:
