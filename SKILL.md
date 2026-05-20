@@ -8,6 +8,9 @@ metadata:
     bins: [ffmpeg, ffprobe, curl, python3]
     env: [GEMINI_API_KEY]
     mcp: [dansugc]
+  optional:
+    env: [ELEVENLABS_API_KEY]  # only required for /talking-video workflow
+    bins: [yt-dlp]              # only required if downloading TikTok music for /talking-video
 ---
 
 # ReelClaw — UGC Reel Production Engine
@@ -32,6 +35,7 @@ Load these reference files when you need detailed specs for each area:
 - `references/ffmpeg-patterns.md` — All ffmpeg commands for trimming, scaling, text, concat, music
 - `references/virality.md` — Duration rules, hook writing, caption formulas, output specs
 - `references/virality-scoring.md` — Gemini-powered virality scoring (single + batch)
+- `references/talking-video.md` — **`/talking-video` workflow** — 30s VO ads with auto-synced captions + music + reactions + demos. Triggered by user typing `/talking-video`.
 
 ### DanSUGC Posting API Reference
 
@@ -40,15 +44,22 @@ If you get stuck with any posting operation, consult these resources:
 - **API docs (LLM-friendly):** https://dansugc.com/llms.txt
 - **Interactive docs:** https://dansugc.com/docs
 
+## Workflow Triggers
+
+| User types | Workflow | What it produces |
+|---|---|---|
+| (default — no slash command) | **Classic reel pipeline** (Steps 0–8 below) | 7–15s text-overlay reels: hook clip + demo + green-zone text + music |
+| `/talking-video` | **Talking-Video workflow** | 20–30s testimonial ads: ElevenLabs VO + CapCut-style auto-synced captions + music underlay + reactions + demos. **Load `references/talking-video.md`** for the full spec, voice library, music recipe, script patterns, JSON schema, and build commands. Uses `assets/talking-video/build_talking_video.py`. |
+
 ## Critical Rules
 
-1. **MAX 15 SECONDS per reel** — non-negotiable for virality
+1. **MAX 15 SECONDS per reel** for the classic pipeline. The `/talking-video` workflow is exempt (target 20–30s) because narrated stories need more runway.
 2. **ALL text MUST use TikTok Sans font** — no exceptions
 3. **ALL text MUST be in the Green Zone** — never in platform UI areas
 4. **ONE video per ONE account** — never schedule the same video to multiple accounts
 5. **Always run Preflight (Step 0) first** — verify all tools before work
 6. **Always use Gemini 3.1 Flash Lite for video intelligence** — model: `gemini-3.1-flash-lite-preview`
-7. **Never expose API keys in output** — redact in logs, never print full keys
+7. **Never expose API keys in output** — redact in logs, never print full keys (applies to `ELEVENLABS_API_KEY` too when using `/talking-video`)
 8. **Purchase videos from DanSUGC before downloading** — users must purchase clips via the MCP tool before getting download URLs
 9. **NEVER construct dansugc.com URLs for downloading** — the only valid download URLs are the storage URLs returned by `mcp__dansugc__purchase_videos`. Do NOT fabricate URLs like `/api/broll/download`, `/api/v1/broll/download`, or any other dansugc.com download path. These are internal browser routes that require session cookies and will fail with API keys.
 
@@ -682,6 +693,72 @@ For each hook, provide:
 
 ---
 
+---
+
+## Step 9: Talking-Video Workflow (`/talking-video`)
+
+A separate, longer-form pipeline for **narrated testimonial UGC ads** (typically 20–30s). Different from the classic reel pipeline in three ways:
+1. **ElevenLabs voiceover** drives the watch-through (not just text overlays)
+2. **CapCut-style auto-synced captions** — generated from VO timestamps, not hand-coded
+3. **Music underlay** runs the full duration at a loudness-normalized level
+
+### When the user types `/talking-video`
+
+**Step 1 — Load the spec**: `Read references/talking-video.md` for the full workflow. It documents the requirements checklist, safe voice IDs, music recipe, 5 script hook families, FB compliance rules, JSON schema, and build commands.
+
+**Step 2 — Confirm requirements with the user** (use the checklist in the reference):
+- `ELEVENLABS_API_KEY` (env var or pasted — never log the full key)
+- App name + CTA copy
+- 4–6+ app demo videos (screen recordings, vertical preferred)
+- Reaction source (DanSUGC `model_id` to fetch, or local folder)
+- Number of videos to produce
+
+**Step 3 — Run preflight extras** (in addition to Step 0):
+```bash
+[ -n "$ELEVENLABS_API_KEY" ] && echo "ElevenLabs API: OK" || echo "ElevenLabs API: MISSING"
+ls assets/talking-video/build_talking_video.py 2>&1
+```
+
+**Step 4 — Inventory and pre-bake music bed**:
+```bash
+# Loop + loudness-normalize any source track to a 30s bed at -16 LUFS
+ffmpeg -y -stream_loop -1 -i "SOURCE_MUSIC.mp3" -t 32 \
+  -af "loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:st=0:d=0.4" \
+  -c:a libmp3lame -q:a 2 "music_bed_30s.mp3"
+```
+
+**Step 5 — Write scripts and JSON spec**: copy `assets/talking-video/concepts_template.json`, write 1+ VO scripts (~75–82 words each for 30s) using the 5 hook family patterns from the reference. Map reactions and demos to the 7-segment timeline.
+
+**Step 6 — Compliance audit**:
+```bash
+# Auto-flag Facebook personal-attributes violations
+grep -iE "your (pcos|acne|anxiety|depression|skin|hair|fertility|body|weight)" your_concepts.json
+```
+
+**Step 7 — Build**:
+```bash
+# All concepts
+python3 assets/talking-video/build_talking_video.py path/to/concepts.json
+
+# Subset (recommended for first batch — review before producing the rest)
+ONLY="01,05,09,13,17" python3 assets/talking-video/build_talking_video.py path/to/concepts.json
+```
+
+**Step 8 — Spot-check 3–4 frames per video**, then produce remaining or iterate.
+
+### Key facts to memorize
+
+- **Captions are auto-synced** — never hand-time them. Use `/v1/text-to-speech/{voice}/with-timestamps` and the phrase grouper in the build script.
+- **Music must be loudness-normalized BEFORE applying gain** — otherwise "50%" will mean different things for different tracks. The recipe is `loudnorm=I=-16:TP=-1.5:LRA=11`.
+- **Last 4 seconds are reserved** for the big CTA card. Auto-captions get capped to end at `video_dur - 4`.
+- **One model per video** keeps character consistency. Mixing reaction clips from different models inside one video looks wrong.
+- **VO scripts target ~75–82 words for 30s** at `speed=1.05`. Shorter scripts will pad with silence; longer scripts will sound rushed after atempo compression.
+
+### Output spec
+Same as classic reels: 1080×1920, 30fps, H.264, AAC 192k, faststart.
+
+---
+
 ## Troubleshooting
 
 **"No token data found" for DanSUGC MCP:**
@@ -703,3 +780,17 @@ For each hook, provide:
 **Text cut off by platform UI:**
 - Check Green Zone specs in [./references/green-zone.md](./references/green-zone.md)
 - Y must be between 210 and 1480, X between 60 and 960 (universal)
+
+### `/talking-video` workflow troubleshooting
+
+**Captions land off-beat from VO:** you're hand-timing captions. Use the `/with-timestamps` endpoint and the phrase grouper in `assets/talking-video/build_talking_video.py`. See `references/talking-video.md` "Caption workflow" section.
+
+**Music is inaudible at 50% volume:** the source track wasn't loudness-normalized. Pre-bake the music bed with `loudnorm=I=-16:TP=-1.5:LRA=11` before the gain stage.
+
+**"your X" caught by Facebook ad review:** auto-audit before producing — `grep -iE "your (pcos|acne|...)" concepts.json`. Replace with `my X` or `women with X` or `people with X`.
+
+**Reaction file not found (`.mp4` vs `.mov` mismatch):** the build script auto-resolves common extension swaps. If it still fails, list the actual files in the reactions folder and update the spec.
+
+**VO sounds rushed / too slow:** target ~75–82 words for 30s at `speed=1.05`. If raw VO is way off, adjust word count rather than relying on extreme atempo (which degrades quality).
+
+**`ELEVENLABS_API_KEY` missing:** required only for the talking-video workflow. Set `export ELEVENLABS_API_KEY="..."` or pass it via the `common.elevenlabs_api_key` field in the JSON spec (do not commit keys to git).

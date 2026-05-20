@@ -1,0 +1,57 @@
+{
+  "_comment": "Talking-Video spec template. Replace all CHANGEME values. See references/talking-video.md for the full schema.",
+  "common": {
+    "_about_api_key": "Leave empty to read from ELEVENLABS_API_KEY env var (recommended). Never commit a real key.",
+    "elevenlabs_api_key": "",
+    "model_id": "eleven_multilingual_v2",
+    "speed": 1.05,
+    "stability": 0.45,
+    "similarity_boost": 0.8,
+    "style": 0.5,
+    "font": "/Users/CHANGEME/Library/Fonts/TikTokSansDisplayBlack.ttf",
+    "demos_dir": "/abs/path/to/CHANGEME/demos",
+    "reactions_dir": "/abs/path/to/CHANGEME/reactions",
+    "out_dir": "/abs/path/to/CHANGEME/output/myapp_v1",
+    "out_prefix": "myapp",
+    "music_path": "/abs/path/to/CHANGEME/music_bed_30s.mp3",
+    "music_volume": 0.5,
+    "cta_text": "MYAPP\non AppStore",
+    "target_duration": 30.0,
+    "cta_reserve": 4.0,
+    "emphasis_words": ["myapp", "ai", "free", "obsessed", "wrong", "real"]
+  },
+  "concepts": [
+    {
+      "_template_for": "Hook family 1 — Deception. Pattern: 'I used [app] for [high stakes] and [surprising outcome]'.",
+      "name": "01_deception_example",
+      "voice_id": "x8syuETaTA9JYwAbE2JM",
+      "voice_name": "Ava",
+      "vo_text": "Help, I used MyApp for [HIGH STAKES SITUATION] and [SURPRISING POSITIVE OUTCOME]. I uploaded one [HUMBLE INPUT] into the app. It gave me [POLISHED RESULT] that looks like I spent [EXPENSIVE ALTERNATIVE]. [SOCIAL PROOF MOMENT]. Nobody knew. Nobody asked. I'm a little terrified. MyApp. On the App Store.",
+      "timeline": [
+        {"src": "reactions/MODEL/REACTION_HOOK.mp4", "in": 1.0, "dur": 3.0},
+        {"src": "reactions/MODEL/REACTION_DISBELIEF.mp4", "in": 1.0, "dur": 3.0},
+        {"src": "reactions/MODEL/REACTION_GASP.mp4", "in": 0.5, "dur": 3.0},
+        {"src": "demos/DEMO_APP_BROWSER.mov", "in": 1.5, "dur": 6.0},
+        {"src": "demos/DEMO_RESULT_REVEAL.mov", "in": 2.0, "dur": 6.0},
+        {"src": "reactions/MODEL/REACTION_PLEASED.mp4", "in": 2.0, "dur": 4.0},
+        {"src": "reactions/MODEL/REACTION_CTA_SMILE.mp4", "in": 2.0, "dur": 5.0}
+      ]
+    },
+    {
+      "_template_for": "Hook family 2 — Identity Dream. Pattern: 'I never had [X] until [app]'.",
+      "name": "02_dream_example",
+      "voice_id": "cR39HTrtXbjvEP4CNYFx",
+      "voice_name": "Daphne",
+      "vo_text": "I never had [DESIRED THING] until MyApp. I don't [HAVE PRIVILEGED ACCESS]. I tried this instead. It gave me [BEAUTIFUL RESULT]. I just sat with it. MyApp. On the App Store.",
+      "timeline": [
+        {"src": "reactions/MODEL/REACTION_SOFT_HOOK.mp4", "in": 1.0, "dur": 3.0},
+        {"src": "reactions/MODEL/REACTION_REFLECTIVE.mp4", "in": 1.0, "dur": 3.0},
+        {"src": "reactions/MODEL/REACTION_GENTLE_SMILE.mp4", "in": 1.0, "dur": 3.0},
+        {"src": "demos/DEMO_APP_BROWSER.mov", "in": 2.0, "dur": 6.0},
+        {"src": "demos/DEMO_RESULT_REVEAL.mov", "in": 1.0, "dur": 6.0},
+        {"src": "reactions/MODEL/REACTION_QUIET_PRIDE.mp4", "in": 1.0, "dur": 4.0},
+        {"src": "reactions/MODEL/REACTION_WARM_CLOSE.mp4", "in": 2.0, "dur": 5.0}
+      ]
+    }
+  ]
+}
