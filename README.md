@@ -27,7 +27,7 @@ ReelClaw is an AI agent skill that automates two distinct UGC pipelines:
 1. **Source hooks** — Search and purchase UGC reaction clips from [DanSUGC](https://dansugc.com)
 2. **Analyze demos** — Use Gemini AI to find the best segments in screen recordings
 3. **Assemble reels** — FFmpeg-powered editing with text overlays, music, and transitions
-4. **Publish** — Schedule to TikTok & Instagram natively via [DanSUGC Posting](https://dansugc.com)
+4. **Publish** — Schedule to TikTok & Instagram natively via [DanSUGC Posting](https://dansugc.com) using the secure 3-step upload flow (presign → PUT → `create_post`). See [`references/posting-upload.md`](references/posting-upload.md).
 5. **Track & replicate** — Monitor performance via DanSUGC's analytics proxy and double down on winners
 6. **Format research** — Find viral format ideas in any niche
 7. **Hook research** — Discover proven text hooks from high-performing videos

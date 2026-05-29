@@ -29,7 +29,7 @@ claude mcp add --transport http -s user dansugc https://dansugc.com/api/mcp \
 - `mcp__dansugc__instagram_search_reels` — Search Instagram reels
 - `mcp__dansugc__instagram_user_reels` — Get an Instagram user's reels
 - `mcp__dansugc__scrapecreators_raw` — Raw proxy to any ScrapCreators endpoint
-- **Posting tools** (requires Posting subscription): `check_posting_subscription`, `list_posting_accounts`, `create_post`, `list_posts`, `update_post`, `delete_post`, `get_posting_analytics`
+- **Posting tools** (requires Posting subscription): `check_posting_subscription`, `list_posting_accounts`, `get_media_upload_url`, `create_post`, `list_posts`, `update_post`, `delete_post`, `get_posting_analytics`, `list_social_sets`, `create_social_set`
 
 **Important:** You must **purchase** videos before downloading them. The `purchase_videos` tool returns **storage URLs** (not dansugc.com URLs) in the `download_url` field. These are the ONLY valid download URLs. **Never construct dansugc.com download URLs** — paths like `/api/broll/download` are internal browser routes that require session cookies and will fail with API keys.
 
@@ -39,48 +39,66 @@ claude mcp add --transport http -s user dansugc https://dansugc.com/api/mcp \
 
 ## DanSUGC Posting — TikTok & Instagram Publishing
 
-**What it is:** Native social media scheduling built into DanSUGC. Same API key, same MCP server — no extra tools needed. Supports TikTok and Instagram.
+Same `dsk_` API key and same MCP server as the B-Roll API — no extra setup. Requires an active Posting subscription (check via `mcp__dansugc__check_posting_subscription`).
+
+**Critical:** As of this version, `create_post` only accepts `media_urls` that were issued by `get_media_upload_url`. External hosts (tmpfiles.org, Dropbox, Google Drive, S3, etc.) will be rejected with `400 media_url not recognized`. This is a security boundary, not a limitation. See [`references/posting-upload.md`](./posting-upload.md) for the full upload recipe.
 
 **Requirements:**
 - Active DanSUGC Posting subscription (separate from B-Roll credits — activate at [dansugc.com/dashboard](https://dansugc.com/dashboard))
 - TikTok and/or Instagram accounts connected in your DanSUGC dashboard
 
-**No extra setup needed** — posting tools are included in the same DanSUGC MCP server you already have.
-
 **Available MCP Tools:**
-- `mcp__dansugc__check_posting_subscription` — Verify posting plan is active
-- `mcp__dansugc__list_posting_accounts` — List connected TikTok/Instagram accounts with IDs
-- `mcp__dansugc__create_post` — Create, schedule, or publish immediately
-- `mcp__dansugc__list_posts` — List all posts with status (draft/scheduled/published/failed)
-- `mcp__dansugc__update_post` — Update caption, scheduled time, or status
-- `mcp__dansugc__delete_post` — Delete a post
-- `mcp__dansugc__get_posting_analytics` — Cross-platform metrics (followers, views, engagement)
+- `mcp__dansugc__check_posting_subscription` — Plan + usage
 - `mcp__dansugc__list_social_sets` — List account groupings
-- `mcp__dansugc__create_social_set` — Create a new account grouping
+- `mcp__dansugc__create_social_set` — New account grouping
+- `mcp__dansugc__list_posting_accounts` — Connected TikTok/Instagram accounts (returns UUIDs needed for `create_post`)
+- `mcp__dansugc__get_media_upload_url` — **NEW** — Presigned R2 PUT URL for one video or image
+- `mcp__dansugc__create_post` — Create / schedule / publish. `media_urls` MUST come from `get_media_upload_url`
+- `mcp__dansugc__list_posts` — List posts by status (draft/scheduled/published/failed)
+- `mcp__dansugc__update_post` — Reschedule / edit caption
+- `mcp__dansugc__delete_post` — Delete a post
+- `mcp__dansugc__get_posting_analytics` — Followers / engagement / top posts
 
-**Usage:**
+**Usage (3-step publish flow):**
+
 ```
-# Check subscription before posting
+# 1. Check subscription
 mcp__dansugc__check_posting_subscription()
 
-# List connected accounts
+# 2. List connected accounts (capture the UUID for each target account)
 mcp__dansugc__list_posting_accounts()
-# → Returns: id, platform, username, followers, total_views
+# → Returns: id (UUID), platform, username, followers, total_views
 
-# Schedule a post
+# 3. Presign an upload URL for the rendered video
+mcp__dansugc__get_media_upload_url(
+  content_type="video/mp4",
+  size_bytes=<exact bytes>
+)
+# → Returns: upload_url (presigned R2 PUT, 5min TTL), public_url, expires_at, max_bytes
+```
+
+```bash
+# 4. PUT the file body to upload_url with the EXACT signed Content-Type
+curl --fail -X PUT "$UPLOAD_URL" \
+  -H "Content-Type: video/mp4" \
+  --data-binary "@./out/reel-001.mp4"
+```
+
+```
+# 5. Schedule the post — media_urls MUST be the public_url from step 3
 mcp__dansugc__create_post(
-  content="Hook text...\n\n#hashtag1 #hashtag2 #fyp",
-  media_urls=["PUBLIC_VIDEO_URL"],
-  account_ids=["ACCOUNT_ID"],
+  account_ids=["<account-uuid>"],
+  caption="Hook text...\n\n#hashtag1 #hashtag2 #fyp",
+  media_urls=["<public_url>"],
   scheduled_for="2026-03-25T18:00:00Z",
   timezone="America/New_York"
 )
 
-# Publish immediately
+# Or publish immediately:
 mcp__dansugc__create_post(
-  content="Caption...",
-  media_urls=["PUBLIC_VIDEO_URL"],
-  account_ids=["ACCOUNT_ID"],
+  account_ids=["<account-uuid>"],
+  caption="Caption...",
+  media_urls=["<public_url>"],
   publish_now=true
 )
 
@@ -92,9 +110,12 @@ mcp__dansugc__get_posting_analytics(range="30d")
 ```
 
 **Key rules:**
-- ONE unique video per account — never post the same video to multiple accounts
-- Currently supports TikTok and Instagram only
-- Videos need a public URL — use tmpfiles.org for temporary hosting (use `/dl/` prefix)
+- The caption field is `caption` (not `content`). Older skill versions used `content` — that field name no longer exists.
+- ONE unique video per account — never post the same video to multiple accounts.
+- Currently supports TikTok and Instagram only.
+- Presigned URLs are single-use with a 5-minute TTL — PUT the bytes immediately.
+- The `Content-Type` header on the PUT must match the MIME passed to `get_media_upload_url` byte-for-byte.
+- Max 10 `media_urls` per post; 200 MB video / 25 MB image; default quota 1 GB / 100 files per 24h.
 
 ---
 

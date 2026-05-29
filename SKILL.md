@@ -35,6 +35,7 @@ Load these reference files when you need detailed specs for each area:
 - `references/ffmpeg-patterns.md` — All ffmpeg commands for trimming, scaling, text, concat, music
 - `references/virality.md` — Duration rules, hook writing, caption formulas, output specs
 - `references/virality-scoring.md` — Gemini-powered virality scoring (single + batch)
+- `references/posting-upload.md` — **Secure 3-step publish flow** (presign → PUT → `create_post`). Required reading before Step 5.
 - `references/talking-video.md` — **`/talking-video` workflow** — 30s VO ads with auto-synced captions + music + reactions + demos. Triggered by user typing `/talking-video`.
 
 ### DanSUGC Posting API Reference
@@ -118,7 +119,7 @@ Verify required MCP servers are connected. If missing, load `references/tools-se
 
 ```
 Required MCP Servers:
-  dansugc — search_videos, purchase_videos, create_post, analytics (all-in-one)
+  dansugc — search_videos, purchase_videos, get_media_upload_url, create_post, posting_analytics (all-in-one)
 ```
 
 ### 0d. Gemini API Key
@@ -442,6 +443,8 @@ For scoring entire directories, use the Python batch scorer in [./references/vir
 
 DanSUGC handles TikTok and Instagram publishing natively — no third-party tools needed. Requires a **DanSUGC Posting subscription** (separate from B-Roll credits — check your dashboard).
 
+**Read [`references/posting-upload.md`](./references/posting-upload.md) before doing this step.** Publishing is now a 3-step flow: **presign → PUT → `create_post`**. External hosts (tmpfiles.org, Dropbox, Google Drive, etc.) are rejected with `400 media_url not recognized` — every `media_urls` entry must come from `get_media_upload_url`.
+
 ### 5a. Check Subscription
 
 ```
@@ -456,26 +459,45 @@ If not subscribed, direct the user to [dansugc.com/dashboard](https://dansugc.co
 mcp__dansugc__list_posting_accounts()
 ```
 
-Returns connected TikTok and Instagram accounts with their IDs, usernames, follower counts. Note the `id` for each account — needed when creating posts.
+Returns connected TikTok and Instagram accounts with their UUIDs, usernames, follower counts. Capture the `id` (UUID) for each target account — required for `create_post`.
 
-### 5c. Upload Video (Get Public URL)
-
-Videos need a public URL. Use tmpfiles.org for temporary hosting:
+### 5c. Presign an Upload URL
 
 ```bash
-url=$(curl -s -F "file=@reel-final.mp4" https://tmpfiles.org/api/v1/upload | \
-  python3 -c "import sys,json; u=json.load(sys.stdin)['data']['url']; \
-  print(u.replace('tmpfiles.org/', 'tmpfiles.org/dl/'))")
-echo "Public URL: $url"
+# Grab the exact byte size — required for the presign
+SIZE=$(stat -f%z ./out/reel-final.mp4)   # macOS
+# SIZE=$(stat -c%s ./out/reel-final.mp4) # Linux
 ```
 
-### 5d. Schedule or Publish Post
+```
+mcp__dansugc__get_media_upload_url(
+  content_type="video/mp4",
+  size_bytes=<SIZE>
+)
+# → upload_url (presigned R2 PUT, 5min TTL), public_url, expires_at, max_bytes, content_type, kind
+```
+
+Allowed MIMEs: `video/mp4`, `video/quicktime`, `video/webm` (video); `image/jpeg`, `image/png`, `image/webp` (image). Max 200 MB video / 25 MB image.
+
+### 5d. PUT the File to the Presigned URL
+
+```bash
+# Content-Type MUST exactly match the MIME passed to get_media_upload_url —
+# R2 signs the header into the URL and will reject anything else.
+curl --fail -X PUT "$UPLOAD_URL" \
+  -H "Content-Type: video/mp4" \
+  --data-binary "@./out/reel-final.mp4"
+```
+
+PUT within 5 minutes of issuing the presign — the URL is single-use and short-lived.
+
+### 5e. Schedule or Publish the Post
 
 ```
 mcp__dansugc__create_post(
-  content="Hook text...\n\nCaption body...\n\n#hashtag1 #hashtag2 #fyp",
-  media_urls=["PUBLIC_VIDEO_URL"],
-  account_ids=["ACCOUNT_ID"],
+  account_ids=["<account-uuid-from-list_posting_accounts>"],
+  caption="Hook text...\n\nCaption body...\n\n#hashtag1 #hashtag2 #fyp",
+  media_urls=["<public_url from get_media_upload_url>"],
   scheduled_for="2026-03-25T18:00:00Z",
   timezone="America/New_York"
 )
@@ -483,11 +505,28 @@ mcp__dansugc__create_post(
 
 Set `publish_now=true` to post immediately instead of scheduling.
 
+**Field name:** the caption parameter is `caption` (not `content`). Older skill versions used `content` — that field is no longer accepted.
+
+**Optional per-platform settings:**
+
+```
+mcp__dansugc__create_post(
+  account_ids=["<uuid>"],
+  caption="...",
+  media_urls=["<public_url>"],
+  publish_now=true,
+  platform_settings={
+    "tiktok": {"privacy_level": "PUBLIC_TO_EVERYONE", "allow_comment": true}
+  }
+)
+```
+
 **Distribution rules:**
 - ONE unique video per account — never post the same video to multiple accounts
 - Stagger posting times by 5 minutes between accounts
+- Max 10 `media_urls` per post
 
-### 5e. Caption Formula
+### 5f. Caption Formula
 
 ```
 [Hook text — the emotional line from the video]
@@ -497,13 +536,13 @@ Set `publish_now=true` to post immediately instead of scheduling.
 #hashtag1 #hashtag2 #hashtag3 #hashtag4 #hashtag5 #fyp
 ```
 
-### 5f. Verify Post Status
+### 5g. Verify Post Status
 
 ```
 mcp__dansugc__list_posts()
 ```
 
-Status values: `draft`, `scheduled`, `published`, `failed`.
+Status values: `draft`, `scheduled`, `published`, `failed`. For failure modes (400 `media_url not recognized`, 413 too large, 429 quota, 503 scanner unreachable, etc.) see [`references/posting-upload.md`](./references/posting-upload.md).
 
 ---
 

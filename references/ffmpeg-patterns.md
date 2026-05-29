@@ -187,15 +187,6 @@ ffprobe -v quiet -print_format json -show_entries format=duration "OUTPUT" | \
   print(f'Duration: {d:.1f}s — {\"OK\" if d <= 15.0 else \"TOO LONG\"}')"
 ```
 
-## Upload to tmpfiles.org
-
-```bash
-url=$(curl -s -F "file=@video.mp4" https://tmpfiles.org/api/v1/upload | \
-  python3 -c "import sys,json; u=json.load(sys.stdin)['data']['url']; \
-  print(u.replace('tmpfiles.org/', 'tmpfiles.org/dl/'))")
-echo "Public URL: $url"
-```
-
 ## Probe Video Info
 
 ```bash
