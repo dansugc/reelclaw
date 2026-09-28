@@ -115,9 +115,10 @@ Done. Next steps:
      or, for 1-5 polished ads edited locally (studio mode; needs Node 22+ and ffmpeg):
        \$reelclaw-ads Make 3 polished ads in studio mode with the demo in ./demo.mp4.
 
-No subscription needed; you pay as you go from DansUGC credits. Editing and rendering are
-free in both modes; you pay only for reactions you don't already own (library clips from \$5) and research
-queries your agent runs (\$0.02 each, only on success). Nothing renders until
+Needs a Growth or Scale plan; on top of it you pay as you go from DansUGC credits. Editing and
+rendering are included in both modes; you pay only for reactions you don't already own (library
+clips are 11 credits each, less your plan's discount) and research queries your agent runs
+(0.02 credits each, only on success). Nothing renders until
 you approve the quoted price.
 Top up: https://dansugc.com/dashboard/credits  Docs: https://github.com/dansugc/reelclaw
 EOF

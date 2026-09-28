@@ -1,6 +1,6 @@
 {
   "name": "reelclaw",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Make TikTok/Reels UGC ads for the product in your repo with real human reaction hooks from DansUGC: many variations on the hosted ReelClaw engine, or 1-5 polished ads edited locally with HyperFrames (studio mode).",
   "author": {
     "name": "DansUGC",
@@ -16,7 +16,7 @@
   "interface": {
     "displayName": "DansUGC ReelClaw",
     "shortDescription": "UGC reaction + demo ads for the product in your repo.",
-    "longDescription": "Reads your repo to understand the product, finds your demo video, and makes UGC ads with real human creator reactions from the DansUGC library. Volume mode renders many variations on the hosted DansUGC ReelClaw engine. Studio mode edits 1-5 polished ads locally with the reelclaw HyperFrames templates (TikTok Sans, safe-zone captions) and checks every render frame by frame. Log in with your DansUGC account (OAuth); no API key or subscription. Editing and rendering are free; you pay only for clips you don't already own and research queries, and nothing is bought or rendered without your explicit yes on the price.",
+    "longDescription": "Reads your repo to understand the product, finds your demo video, and makes UGC ads with real human creator reactions from the DansUGC library. Volume mode renders many variations on the hosted DansUGC ReelClaw engine. Studio mode edits 1-5 polished ads locally with the reelclaw HyperFrames templates (TikTok Sans, safe-zone captions) and checks every render frame by frame. Log in with your DansUGC account (OAuth); no API key. Needs a Growth or Scale plan; editing and rendering are included; you pay only for clips you don't already own and research queries, and nothing is bought or rendered without your explicit yes on the price.",
     "developerName": "DansUGC",
     "category": "Productivity",
     "capabilities": ["Interactive", "Read", "Write"],

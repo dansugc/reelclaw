@@ -15,8 +15,8 @@ hooks, and pairs them with real human creator reactions from the DansUGC library
   **looks at the rendered frames** against a QA checklist and fixes what's off before handing you
   the file. Needs Node 22+ and ffmpeg.
 
-No Gemini key, no API keys, no subscription: you log in once with your DansUGC account (OAuth) and
-pay per clip from your credits. Editing and rendering are free in both modes.
+No Gemini key, no API keys: you log in once with your DansUGC account (OAuth). Needs a Growth or
+Scale plan; on top of it you pay per clip from your credits. Editing and rendering are included in both modes.
 
 > Every reaction is a real human creator. Never AI.
 
@@ -94,7 +94,8 @@ your agent at [`plugins/reelclaw/skills/reelclaw-ads/SKILL.md`](plugins/reelclaw
 ### Signing in
 
 The DansUGC MCP server uses **OAuth only**: you log in with your DansUGC account in the browser once
-and your agent stays connected. No subscription is needed. DansUGC API keys (`dsk_…`) don't work on
+and your agent stays connected. Your account needs a Growth or Scale plan (team members use their
+team owner's plan). DansUGC API keys (`dsk_…`) don't work on
 MCP; they're for the REST API (`/api/v1`) only. If you added the server earlier with an
 `Authorization` header or `bearer_token_env_var`, remove it and log in with OAuth
 (see Troubleshooting).
@@ -121,7 +122,7 @@ up" → studio) and asks once if it's unclear.
    shows you a 5-line brief (what it is, who it's for, the painful problem, the aha moment, real
    proof). It never invents claims, prices, or results.
 2. **Demo**: it finds `.mp4`/`.mov` screen recordings in the repo or asks you for one.
-3. **Research (optional)**: real viral examples via TikTok/Instagram search, $0.02 per query; the
+3. **Research (optional)**: real viral examples via TikTok/Instagram search, 0.02 credits per query; the
    agent says how many it plans to run first.
 4. **Hooks**: lowercase, under 80 characters, specific to the pain or the aha; reviewed with you.
 5. Volume mode: ReelClaw matches reactions → you see the **quote** → **nothing renders until you say
@@ -153,15 +154,18 @@ reel cost one render each.
 
 ## What it costs
 
-No subscription. You pay as you go from your DansUGC credit balance:
+ReelClaw needs a Growth or Scale plan. On top of it, you pay as you go from your DansUGC credit balance:
 
-- **UGC clips you buy.** Library b-roll clips start at $5. In ReelClaw you only pay for creator
-  reactions you don't already own; reactions you own are reused for free.
-- **Editing and rendering: free.** Reaction matching, hooks, overlays, music, and rendering cost
+- **UGC clips you buy.** Library b-roll clips are 11 credits each (images 8), less with your
+  plan's discount (no volume discounts; always current rates). In ReelClaw you only pay for
+  creator reactions you don't already own; reactions you own are reused for free.
+- **Editing and rendering: included.** Reaction matching, hooks, overlays, music, and rendering cost
   nothing, whether hosted (volume) or on your machine (studio).
 - **Research queries** (TikTok/Instagram search and other ScrapeCreators lookups your agent runs
-  through the MCP): $0.02 per query, charged only when the query succeeds. ReelClaw's own research
-  (reaction matching, hooks) is free.
+  through the MCP): 0.02 credits per query, charged only when the query succeeds. ReelClaw's own research
+  (reaction matching, hooks) is included.
+- Prices, quotes, and balances are in DansUGC credits; the agent talks in credits and only
+  converts to dollars if you ask.
 - The agent always shows the exact price first and waits for an explicit yes: the render quote in
   volume mode, the clip-purchase quote in studio mode (`purchase_videos` is two-step: a free quote,
   then the buy). Team members can charge a team's credits instead of their own; the agent always
@@ -210,7 +214,7 @@ plugins/reelclaw/
     SKILL.md                           router: shared steps, volume mode, studio mode
     references/
       product-brief.md                 reading the product from the repo, truthfully
-      research.md                      paid viral research ($0.02/query) and winner thresholds
+      research.md                      paid viral research (0.02 credits/query) and winner thresholds
       hooks.md                         hook rules, formats, per-template voice, captions
       footage.md                       DansUGC reactions: search, compare, two-step buy, trims; demo prep
       volume-mode.md                   hosted reelclaw_* flow: create → quote → yes → render → download

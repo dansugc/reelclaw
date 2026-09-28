@@ -10,7 +10,7 @@
     {
       "name": "reelclaw",
       "source": "./plugins/reelclaw",
-      "description": "Make TikTok/Reels UGC ads for the product in your repo: real human reaction hooks + your demo. Many variations on the hosted DansUGC ReelClaw engine, or 1-5 polished ads edited locally with HyperFrames. Editing is free; only new library clips and research queries cost credits.",
+      "description": "Make TikTok/Reels UGC ads for the product in your repo: real human reaction hooks + your demo. Many variations on the hosted DansUGC ReelClaw engine, or 1-5 polished ads edited locally with HyperFrames. Needs a Growth or Scale plan; editing is included and only new library clips and research queries cost credits.",
       "category": "marketing",
       "tags": ["ugc", "ads", "tiktok", "reels", "video", "marketing", "mcp", "hyperframes"]
     }

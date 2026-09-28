@@ -56,6 +56,12 @@ FULL new list; include an existing `id` to edit that hook in place. The same too
 alternative), and `music_links` (TikTok/IG sound links, one picked per video; `[]` = no music).
 Stage must be `ready`.
 
+**No music?** If the user gave no sound links and didn't ask for silent videos (and the batch has no
+`reference_url` overlay, which brings its own soundtrack), call `reelclaw_trending_music { category,
+project_id? }` (0.02 credits per query, 1-2 queries, free when cached) and pass 3-5 of its
+`music_links` in this same `reelclaw_update_batch`. Tell the user the picks (title · artist · trend).
+For paid ads, relay its `license_note`. Choosing and licensing: [music.md](music.md).
+
 Hook ↔ video math: hooks are spread across demos — with D demos, N videos use about ⌈N / D⌉
 distinct hooks. With a `reference_url` overlay, exactly one hook per video.
 
@@ -81,12 +87,14 @@ server downloads it and marks it ready.
 
 1. `reelclaw_quote { batch_id, count, hooks?, music_links? }` → `{ quote_id, expires_at,
    new_reactions, owned_reactions, total_credits, available_credits, sufficient_credits,
-   confirmation_required: true }`. Do all edits BEFORE quoting — **any edit after a quote
-   invalidates it**.
+   confirmation_required: true }`, always at current rates. Do all edits BEFORE quoting — **any edit after a quote
+   invalidates it** (including setting music from `reelclaw_trending_music`).
 2. Show the price plainly, using the numbers from the quote (never estimate your own):
    > `<count>` videos · `<new_reactions>` new reactions (charged) · `<owned_reactions>` already
-   > owned (free) · editing & rendering free
-   > **Total: `<total_credits>` credits** · you have `<available_credits>` available. Render now?
+   > owned (free) · editing & rendering included
+   > **Total: `<total_credits>` credits** · you have `<available_credits>` credits available. Render now?
+
+   Always in credits, never "$" (unless the user asks for dollars).
 3. **STOP and wait for an explicit yes** ("yes", "go", "render"). Never render on your own
    initiative, never treat silence or the original "make ads" request as consent, and never reuse an
    approval after the price or batch changed. Cheaper options: exclude new reactions, filter

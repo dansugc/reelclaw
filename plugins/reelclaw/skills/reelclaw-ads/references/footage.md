@@ -58,13 +58,16 @@ collide with your hook). Vertical clips need no cropping.
 ### Buy (two-step; charges credits only on the second call)
 
 1. **Quote:** `purchase_videos { video_ids: [...], project_id? }` WITHOUT `expected_total_cents`.
-   It charges nothing and returns the exact total and the account that will be charged.
-2. Show it plainly and STOP for an explicit yes, e.g.
-   "2 clips · **$14.00** from your Personal Account (balance $X). Buy?" or, for a team,
-   "… **$14.00** from the *Acme* team's credits. Buy?". Before the first spend on a team in a
-   conversation, always name the team and the amount.
+   It charges nothing and returns the exact total in credits and the account that will be charged.
+   Use that total; never multiply per-clip prices yourself (already-owned clips are 0 and the
+   quote shows the list price and any plan discount).
+2. Show it plainly in credits and STOP for an explicit yes, e.g.
+   "2 clips · **22 credits** from your Personal Account (balance 245.50 credits). Buy?" or, for a
+   team, "… **22 credits** from the *Acme* team's credits. Buy?". Before the first spend on a team
+   in a conversation, always name the team and the amount.
 3. **Buy:** after the yes, call again with the SAME `video_ids` (+ the same `project_id`) plus
-   `expected_total_cents` from step 1 (max 50 clips). It returns a signed `download_url` per clip,
+   `expected_total_cents` from step 1 (hundredths of a credit, e.g. 2200 = 22 credits; or pass
+   `expected_total_credits: 22`) (max 50 clips). It returns a signed `download_url` per clip,
    valid about 1 hour; already-owned clips come back under "Already Purchased", free. If it reports a
    total different from the one you showed, don't retry blindly: re-quote and re-confirm. Never construct download URLs yourself.
 4. Download right away (quote the URL; it contains `&`):

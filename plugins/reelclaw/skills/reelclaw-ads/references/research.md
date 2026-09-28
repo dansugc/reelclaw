@@ -6,11 +6,11 @@ creator's text verbatim, and never pull someone else's video into an ad.
 ## Cost rule
 
 `tiktok_search_videos`, `tiktok_user_videos`, `tiktok_search_users`, `instagram_search_reels`,
-`instagram_user_reels`, and `scrapecreators_raw` each cost **$0.02 per successful query** from
+`instagram_user_reels`, and `scrapecreators_raw` each cost **0.02 credits per successful query** from
 the selected account's DansUGC credits (Personal Account, or the team whose `project_id` you pass).
 Before the first one, tell the user the plan, the cap, and (for a team) which team pays, e.g.:
 
-> I'll run 4 searches ($0.08) to find what's working for habit apps on TikTok and Reels. OK?
+> I'll run 4 searches (0.08 credits) to find what's working for habit apps on TikTok and Reels. OK?
 
 Default cap 5 queries per session unless the user asked for deep research. Skip research entirely
 when the user already knows the angle, has hooks, or says no. ReelClaw's own reaction matching and
@@ -48,7 +48,7 @@ to pair. Keep the raw results out of the chat.
 ## Winners after posting (24-48 h)
 
 If the user posts and asks how it did, pull the post's stats (`scrapecreators_raw` with the post
-URL, $0.02) and compare:
+URL, 0.02 credits) and compare:
 
 | Metric | Good | Great | Viral |
 |---|---|---|---|

@@ -11,5 +11,5 @@ tool_timeout_sec = 120
 startup_timeout_sec = 20
 
 # Auth is OAuth only. DansUGC API keys (dsk_...) are for the REST API and are rejected on MCP,
-# so don't set bearer_token_env_var or an Authorization header here. No subscription needed:
+# so don't set bearer_token_env_var or an Authorization header here. Needs a Growth or Scale plan;
 # clips and research queries are paid from your DansUGC credits.

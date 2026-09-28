@@ -17,7 +17,7 @@ follow `next_action` when present — they say exactly what to do. Never loop bl
 | Code | Meaning | Recovery |
 |---|---|---|
 | `session_changed` (409) | The batch was edited elsewhere (dashboard tab, teammate) after you read it. | `reelclaw_get_batch`, re-apply your change on the fresh state, retry **once**. If it fails again, tell the user the batch is being edited elsewhere. |
-| `insufficient_credits` (402) | Not enough credits for the new reactions in a quote. | Don't render. Send the user to https://dansugc.com/dashboard/credits. After top-up, `reelclaw_quote` again and get a fresh yes. To lower cost: exclude new reactions, filter `ownership` to owned reactions, or reduce `count`. |
+| `insufficient_credits` (402) | Not enough credits for the new reactions in a quote (or for a clip purchase / research query). | Don't render. Send the user to https://dansugc.com/dashboard/credits. After top-up, `reelclaw_quote` again and get a fresh yes. To lower cost: exclude new reactions, filter `ownership` to owned reactions, or reduce `count`. |
 | `price_changed` (409) | The batch was edited after the quote (any edit invalidates it), or ownership/pricing changed. | Re-quote, show the new price, get a fresh yes. |
 | `quote_required` (400) | Render called without a valid `quote_id`. | `reelclaw_quote` → confirm → render. |
 | `reactions_changed` | Some matched reactions no longer fit the filters or are unavailable. | `reelclaw_update_batch` with `replace_reaction_id` / `exclude_reaction_ids` (`reelclaw_advance_batch` is a no-op once the batch is `ready`; for a fresh selection create a new batch); review; re-quote. |
@@ -28,6 +28,8 @@ follow `next_action` when present — they say exactly what to do. Never loop bl
 | `too_many_demos` (409) | Max 20 demos per batch. | Remove some with `reelclaw_manage_demo … remove`. |
 | `reference_*_unavailable`, `overlay_*` | The reference ad couldn't be read. | Continue without `reference_url`, or ask the user for a different public link. |
 | `billing_unavailable`, `billing_settlement_failed`, `workflow_*`, `upstream_error`, `queue_error` (usually retryable) | Temporary platform issue. Nothing is lost. | Wait and retry per policy; for rendering videos, `reelclaw_resume_batch`. |
+| `music_search_unavailable` / `rate_limited` (`reelclaw_trending_music`) | TikTok music search failed or is busy. Nothing was charged. | Retry once after `retry_after_seconds` (or ~30 s). Still failing: ask the user for a sound link, or render without music (`music_links: []`). |
+| `account_unavailable` | The `project_id` isn't a team the user can use (research tools like `reelclaw_trending_music`). Nothing was charged. | `list_accounts`, or omit `project_id` for the Personal Account. |
 | `not_found` | Wrong id, or the batch belongs to another account/project. | `reelclaw_list_batches` (pass `project_id` if it's a team project). |
 | `invalid_input` | A parameter failed validation (`field` names it). | Fix that input and retry. |
 | `request_failed` | Unexpected server error (logged by DansUGC). | Retry once after 30 s; then report and give the `dashboard_url`. |

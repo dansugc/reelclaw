@@ -4,7 +4,7 @@ description: Make short-form UGC video ads (TikTok, Reels, Shorts) for the produ
 license: MIT
 metadata:
   author: DansUGC
-  version: "1.1.0"
+  version: "1.2.0"
 ---
 
 # DansUGC ReelClaw: UGC ads from your repo
@@ -31,11 +31,18 @@ skill loads; a Codex script install puts it at `~/.agents/skills/reelclaw-ads`).
   - Auth is OAuth only (browser login with the DansUGC account). Never ask for or suggest an API
     key. If a tool says it "no longer accepts API keys — reconnect with OAuth", see
     [references/errors.md](references/errors.md).
-- Cost (say it when asked, and before anything is spent): no subscription, pay as you go from
-  DansUGC credits. **Editing and rendering are free in both modes.** Users pay only for (a)
-  reaction clips they don't already own (library clips from $5; owned clips are never charged
-  again) and (b) research queries through the MCP (TikTok/Instagram search, $0.02 per query, only
-  on success). Top up at https://dansugc.com/dashboard/credits.
+- Cost (say it when asked, and before anything is spent): needs a Growth or Scale plan (team
+  members use their team owner's plan); if a tool returns `reelclaw_plan_required`, relay the message
+  and the upgrade link and stop. On top of the plan, usage comes from DansUGC credits. **Editing and
+  rendering are included in both modes.** Users pay only for (a) reaction clips they don't already
+  own (library clips are 11 credits each, images 8, less the plan's discount; owned clips are never
+  charged again) and (b) research queries through the MCP (TikTok/Instagram search, 0.02 credits
+  per query, only on success). Top up at https://dansugc.com/dashboard/credits.
+- **Talk in credits.** Every price, quote, and balance is in DansUGC credits ("11 credits per
+  clip", "Total: 104.50 credits", "Balance: 245.50 credits"). Never write "$" amounts; only convert
+  to dollars if the user explicitly asks, and then say the credit amount first. Quote totals come
+  from the tools (`purchase_videos` quote step, `reelclaw_quote`), never from multiplying per-clip
+  prices yourself (owned clips are free and the plan discount is applied for you).
 - **Accounts.** A user has a Personal Account and may belong to teams (each with its own credits
   and plan discounts). When the user mentions a team, company, or teammate, or a spend fails for
   low personal balance, call `list_accounts` and pass that team's `project_id` to every account
@@ -76,8 +83,9 @@ locally (studio mode). OK, or do you want 10+ quick variations from the hosted e
    ```
    None? Ask for one (phone screen recording, or QuickTime → File → New Screen Recording).
 3. **Research real viral examples (optional, paid).** `tiktok_search_videos` /
-   `instagram_search_reels` cost $0.02 per successful query. Before the first query say how many
-   you plan (default ≤ 5, $0.10) and proceed only if the user agrees or already asked for research.
+   `instagram_search_reels` cost 0.02 credits per successful query. Before the first query say how
+   many you plan (default ≤ 5, 0.10 credits) and proceed only if the user agrees or already asked
+   for research.
    Use it to pick the format and steal hook *structures*, never text verbatim.
    How: [references/research.md](references/research.md).
 4. **Write the hooks.** Lowercase, first person or POV/"when", under 80 characters, specific to
@@ -87,6 +95,14 @@ locally (studio mode). OK, or do you want 10+ quick variations from the hosted e
 5. **Choose reactions** from the DansUGC library (real creators). Volume: the engine matches them;
    you review. Studio: you search, compare previews, and buy only after the user confirms the
    price. How: [references/footage.md](references/footage.md).
+6. **Music.** If the user gave no sound and didn't ask for silent videos, don't make them hunt for
+   one: `reelclaw_trending_music { category }` returns trending TikTok sounds for the niche
+   (0.02 credits per query, 1-2 per lookup, cached 6 h for free repeats; say it before the first
+   call). Pick 3-5 that match the hook's energy (prefer `rising`, length ≥ the reel). Volume: pass
+   its `music_links` to `reelclaw_update_batch` before quoting. Studio: download a song's
+   `preview_url` and use it as `music`. Ads: relay `license_note` (paid ads and TikTok business
+   accounts need Commercial Music Library tracks; never say a sound is cleared). How:
+   [references/music.md](references/music.md).
 
 ## 3. Volume mode (hosted engine)
 
@@ -95,7 +111,8 @@ Full procedure (create → advance → hooks → demo upload → quote → rende
 Non-negotiables:
 
 - `reelclaw_create_batch` → loop `reelclaw_advance_batch` until `done` → rewrite hooks with
-  `reelclaw_update_batch` → `reelclaw_add_demo` + `curl -X PUT --data-binary` → `reelclaw_quote`.
+  `reelclaw_update_batch` (no music yet? `reelclaw_trending_music` → its `music_links` in the same
+  update) → `reelclaw_add_demo` + `curl -X PUT --data-binary` → `reelclaw_quote`.
 - **Show the quote and STOP for an explicit yes** before `reelclaw_render`. Never treat the original
   request or silence as consent; any edit after a quote invalidates it (re-quote, re-confirm).
 - Poll `reelclaw_get_batch` every `poll_after_seconds`; download each ready video to

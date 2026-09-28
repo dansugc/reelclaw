@@ -26,9 +26,11 @@ Rules:
   says it no longer accepts API keys or asks to reconnect with OAuth, tell me to remove any
   `bearer_token_env_var` from `[mcp_servers.dansugc]` and run `codex mcp login dansugc`. Never ask
   me for an API key.
-- No subscription needed; it's pay-as-you-go from DansUGC credits. Editing and rendering are free
-  in both modes; only clips I don't already own cost credits (from $5) and research queries
-  (TikTok/Instagram search) cost $0.02 each, only on success.
+- It needs a Growth or Scale plan; on top of that it's pay-as-you-go from DansUGC credits. Editing
+  and rendering are included in both modes; only clips I don't already own cost credits (11 credits
+  each, less my plan's discount) and research queries (TikTok/Instagram search) cost 0.02 credits
+  each, only on success.
+- Talk to me in credits ("Total: 33 credits"), never "$", unless I ask for dollars.
 - If I mention a team or company, call `list_accounts` and use that team's `project_id`; never
   switch accounts on your own, and name the team and amount before its first spend.
 - Always show the price and wait for my explicit "yes" before `reelclaw_render` or buying clips

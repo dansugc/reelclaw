@@ -56,6 +56,11 @@ cover` (a landscape or 3:4 demo gets its sides cropped; check the QA frame after
 No music and both volumes 0 → silent output (the generator warns). Fine for organic posts where a
 trending sound is added in-app; for ads add `music` or a clip volume.
 
+Trending `music`: `reelclaw_trending_music { category }` (0.02 credits per query) → `curl -fL -o
+reelclaw-studio/footage/music-<slug>.m4a "<preview_url>"` → `"music": "reelclaw-studio/footage/music-<slug>.m4a"`.
+Download it (the URL has no file extension and expires); a TikTok sound page link (`music_link`)
+does not work here, yt-dlp can't read those. Licensing for ads: [music.md](music.md).
+
 ## no_yapping
 
 `[intro fullscreen · intro-secs · hook] → [typing top half / demo bottom half · step captions at the seam]`

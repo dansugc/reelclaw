@@ -1,13 +1,16 @@
 # DansUGC MCP tool reference (ReelClaw + library + research + posting)
 
 Server: `dansugc` at `https://dansugc.com/mcp` (streamable HTTP). Auth: OAuth only — the user logs
-in with their DansUGC account in the browser; no subscription needed. DansUGC API keys (`dsk_…`)
+in with their DansUGC account in the browser; the account needs a Growth or Scale plan (else every
+tool returns `reelclaw_plan_required`). DansUGC API keys (`dsk_…`)
 are for the REST API and are rejected on MCP (`reelclaw_login_required` / "reconnect with OAuth").
 
-Cost: pay-as-you-go from DansUGC credits. Editing and rendering are free; only reactions the account
-doesn't already own are charged (library clips from $5). ReelClaw research is free; other research
-queries through the MCP (TikTok/Instagram search) cost $0.02 per ScrapeCreators query, only on
-success. `reelclaw_quote` gives the exact number before anything is spent.
+Cost: a Growth or Scale plan, then pay-as-you-go from DansUGC credits. Editing and rendering are
+included; only reactions the account doesn't already own are charged (library clips are 11 credits
+each, images 8, less the plan's discount). ReelClaw research is included; other research queries
+through the MCP (TikTok/Instagram search, `reelclaw_trending_music`) cost 0.02 credits per
+ScrapeCreators query, only on success. `reelclaw_quote` gives the exact number before anything is spent. All prices, quotes and
+balances are in credits: say "11 credits", never "$11", unless the user asks for dollars.
 
 The authoritative input schema is the one your client shows for each tool; this page is a map.
 
@@ -45,6 +48,7 @@ Errors: `isError: true` with `{ code, message, retryable, field?, retry_after_se
 | `reelclaw_render` | `batch_id`, `quote_id` (required), `count`, `hooks?`, `music_links?` — same as quoted | **Spends credits** (marked destructive). `{ stage: "rendering", count, poll_after_seconds }`. |
 | `reelclaw_resume_batch` | `batch_id` | Retries retryable failed videos and restarts a stalled render. No extra charge. |
 | `reelclaw_cancel_video` | `video_id` | Cancels one rendering video; irreversible; its reserved credits are released. Only on user request. |
+| `reelclaw_trending_music` | `category` (niche, e.g. "fitness app"), `country?` (default `US`), `period?` `1\|7\|30\|90\|180` days (default 7), `limit?` 1-20 (default 10), `commercial_only?`, `project_id?` | `songs: [{ rank, title, artist, duration_seconds, uses, trend: "rising"\|"popular"\|"steady", category_videos, category_video_plays, label_track, commercial_music_flag, cover_url, preview_url, music_link, example_video_url }]`, `music_links` (top 5, valid for `music_links` inputs), `license_note`, `queries`, `credits_charged`, `cached`. **0.02 credits per ScrapeCreators query, 1-2 per call; cached 6 h per category + country + period (then 0 credits).** Use when the batch has no music. [music.md](music.md) |
 | `reelclaw_get_overlay` | `overlay_id` | `reference_url` flow: `state` (processing/ready/failed), `duration_seconds`, `text_layer_id`, `text_layers`, detected `reaction`. If no text layer is chosen, the user must pick one in the dashboard editor before rendering. |
 
 ## Accounts, library, research, posting (both modes; studio mode relies on these)
@@ -57,11 +61,11 @@ accounts on your own; name the team and amount before its first spend in a conve
 |---|---|---|
 | `list_accounts` | none | Personal Account + teams the user belongs to (with `project_id`). Call it when the user mentions a team/company/teammate, or a spend fails for low personal balance. |
 | `get_balance` | `project_id?` | available credits for that account |
-| `search_videos` | `semantic_search?`, `search?`, `emotion?`, `gender?`, `age_range?`, `location?`, `min_virality?`, `sort_by?`, `limit?`, `page?`, `project_id?`… | library clips (real creators): price, duration, emotion, virality, creator, `Preview` URL; a download link for clips the account owns. Free. |
-| `get_video` | `video_id`, `project_id?` | one clip's details, price, preview; download link if owned |
-| `purchase_videos` | `video_ids` (1-50), `project_id?`, `expected_total_cents?` | **Two-step.** Without `expected_total_cents`: a quote (exact total + account charged), nothing charged. With it (after the user's yes): charges and returns a signed `download_url` per clip (~1 h); owned clips come back under "Already Purchased", free. Team-bought clips belong to the team. |
+| `search_videos` | `semantic_search?`, `search?`, `emotion?`, `gender?`, `age_range?`, `location?`, `min_virality?`, `sort_by?`, `limit?`, `page?`, `project_id?`… | library clips (real creators): price in credits, duration, emotion, virality, creator, `Preview` URL; a download link for clips the account owns. Free. |
+| `get_video` | `video_id`, `project_id?` | one clip's details, price in credits, preview; download link if owned |
+| `purchase_videos` | `video_ids` (1-50), `project_id?`, `expected_total_cents?` (hundredths of a credit) or `expected_total_credits?` | **Two-step.** Without `expected_total_cents`: a quote (exact total in credits, how it was built, account charged), nothing charged. With it (after the user's yes): charges and returns a signed `download_url` per clip (~1 h); owned clips come back under "Already Purchased", free. Team-bought clips belong to the team. |
 | `list_purchases` | filters, `project_id?` | clips the account owns, with fresh download links |
-| `tiktok_search_videos` / `tiktok_user_videos` / `tiktok_search_users` / `instagram_search_reels` / `instagram_user_reels` / `scrapecreators_raw` | query / handle / path, `project_id?` | research data; **$0.02 per successful query** from the selected account (research.md) |
+| `tiktok_search_videos` / `tiktok_user_videos` / `tiktok_search_users` / `instagram_search_reels` / `instagram_user_reels` / `scrapecreators_raw` | query / handle / path, `project_id?` | research data; **0.02 credits per successful query** from the selected account (research.md) |
 | `check_posting_subscription` | none | posting plan status (posting needs a plan; nothing else does) |
 | `list_posting_accounts` | none | connected TikTok/Instagram accounts (UUIDs) |
 | `get_media_upload_url` | `content_type`, `size_bytes` | single-use PUT URL (5 min) + `public_url` |
@@ -70,13 +74,17 @@ accounts on your own; name the team and amount before its first spend in a conve
 
 ## Pricing model (what to tell users)
 
-- No subscription: pay-as-you-go from DansUGC credits.
-- Reaction matching, hook writing, editing, overlays, music, and rendering are **free**.
-- Research queries run through the MCP outside ReelClaw (TikTok/Instagram search) cost **$0.02 per
-  ScrapeCreators query**, charged only on success.
+- Needs a Growth or Scale plan; usage on top is pay-as-you-go from DansUGC credits.
+- Reaction matching, hook writing, editing, overlays, music, and rendering are **included**.
+- Research queries run through the MCP outside ReelClaw (TikTok/Instagram search,
+  `reelclaw_trending_music`) cost **0.02 credits per ScrapeCreators query**, charged only on
+  success. A trending-music lookup is 1-2 queries, and a repeat within 6 hours is free (cached).
+- Library clips list at **11 credits each** (images 8), less the account's plan discount (Growth
+  10–15%, Scale 15–20%) or a live sale, whichever is larger. There are no volume discounts, and the
+  MCP always charges current rates. Always relay the tool's total, in credits.
 - For rendering, the only cost is licensing **new** reactions from the DansUGC library that the account doesn't
   already own. Owned reactions are free to reuse (`filters.ownership: "owned"` for a zero-credit batch).
-- Studio mode: editing and rendering happen locally and are free; the only charges are clips bought
+- Studio mode: editing and rendering happen locally and are included; the only charges are clips bought
   with `purchase_videos` (exact total from its quote step) and research queries.
 - The exact cost is whatever `reelclaw_quote` / the `purchase_videos` quote returns — never estimate. Credits are topped up at
   https://dansugc.com/dashboard/credits.

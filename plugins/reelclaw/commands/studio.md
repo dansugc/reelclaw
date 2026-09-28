@@ -23,4 +23,4 @@ clip price with `purchase_videos` first and WAIT for my explicit yes before buyi
 are free), install one template copy per reel under `./reelclaw-studio/`, generate + render with
 `scripts/run-generator.mjs`, then run the QA loop: look at every QA frame, fix, and re-render (max 3
 passes). Deliver to `./reelclaw-output/studio/` with a short QA summary. Editing and rendering are
-free; only clips and research queries cost credits.
+included with the Growth or Scale plan; only clips and research queries cost credits.
