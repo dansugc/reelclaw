@@ -37,6 +37,7 @@ references/hyperframes-editing.md
 references/publishing.md
 references/errors.md
 references/tools.md
+references/music.md
 scripts/run-generator.mjs
 scripts/qa-frames.sh
 agents/openai.yaml"
