@@ -1,0 +1,13 @@
+interface:
+  display_name: "DansUGC ReelClaw"
+  short_description: "UGC reaction + demo ads for this repo: hosted batches or local HyperFrames studio"
+  brand_color: "#111111"
+  default_prompt: "$reelclaw-ads: Make 10 UGC ads for this project."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "dansugc"
+      description: "DansUGC MCP server (ReelClaw, clip library, research, posting tools); OAuth only, log in with `codex mcp login dansugc`"
+      transport: "streamable_http"
+      url: "https://dansugc.com/mcp"

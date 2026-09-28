@@ -1,0 +1,20 @@
+{
+  "name": "dansugc",
+  "interface": {
+    "displayName": "DansUGC"
+  },
+  "plugins": [
+    {
+      "name": "reelclaw",
+      "source": {
+        "source": "local",
+        "path": "./plugins/reelclaw"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

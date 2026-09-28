@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "dansugc": {
+      "type": "http",
+      "url": "https://dansugc.com/mcp",
+      "tool_timeout_sec": 120
+    }
+  }
+}

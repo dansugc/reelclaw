@@ -1,0 +1,15 @@
+{
+  "name": "reelclaw",
+  "displayName": "DansUGC ReelClaw",
+  "version": "1.1.0",
+  "description": "Make TikTok/Reels UGC ads for the product in your repo with real human reaction hooks from DansUGC. Volume mode renders many variations on the hosted ReelClaw engine; studio mode edits 1-5 polished ads locally with HyperFrames templates and a look-at-the-frames QA loop. No API keys or subscription: log in with your DansUGC account (OAuth); editing is free, you pay only for clips and research queries.",
+  "author": {
+    "name": "DansUGC",
+    "email": "dan@dansugcmodels.com",
+    "url": "https://dansugc.com"
+  },
+  "homepage": "https://dansugc.com/skills/reelclaw",
+  "repository": "https://github.com/dansugc/reelclaw",
+  "license": "MIT",
+  "keywords": ["ugc", "ads", "tiktok", "reels", "short-form video", "marketing", "dansugc", "reelclaw", "hyperframes"]
+}

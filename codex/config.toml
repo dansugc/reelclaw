@@ -1,0 +1,15 @@
+# DansUGC MCP server for OpenAI Codex — paste into ~/.codex/config.toml
+# (or run: codex mcp add dansugc --url https://dansugc.com/mcp)
+#
+# Then log in once with your DansUGC account (OAuth, opens your browser, no API key):
+#   codex mcp login dansugc
+
+[mcp_servers.dansugc]
+url = "https://dansugc.com/mcp"
+# ReelClaw research calls can run ~45 s; give tools headroom over the 60 s default.
+tool_timeout_sec = 120
+startup_timeout_sec = 20
+
+# Auth is OAuth only. DansUGC API keys (dsk_...) are for the REST API and are rejected on MCP,
+# so don't set bearer_token_env_var or an Authorization header here. No subscription needed:
+# clips and research queries are paid from your DansUGC credits.

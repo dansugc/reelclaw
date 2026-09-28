@@ -1,307 +1,268 @@
-# ReelClaw
+# DansUGC ReelClaw for coding agents
 
-UGC reel production engine for AI coding agents. Create scroll-stopping short-form videos at scale.
+Make short-form UGC ads (TikTok, Reels, Shorts) for the product you're building — from inside
+Claude Code or OpenAI Codex.
 
-```
-npx skills add dansugc/reelclaw --all
-```
+Your agent reads your repo to understand the product, finds your demo video, writes TikTok-native
+hooks, and pairs them with real human creator reactions from the DansUGC library. Two modes:
 
-## See it in action
+- **Volume mode** (hosted): the agent drives the **DansUGC ReelClaw** engine over MCP. It matches
+  reactions, overlays hooks in the safe zone, adds music, and renders 6-60 vertical MP4s on DansUGC
+  servers. Nothing to install locally.
+- **Studio mode** (local): for 1-5 polished ads or specific edits. The agent installs a
+  [reelclaw HyperFrames template](https://github.com/danielhangan/reelclaw-templates) per reel,
+  buys only the clips you approve, renders on your machine (TikTok Sans, safe-zone captions), then
+  **looks at the rendered frames** against a QA checklist and fixes what's off before handing you
+  the file. Needs Node 22+ and ffmpeg.
 
-A 30-second talking-video produced end-to-end by the `/talking-video` workflow — ElevenLabs voiceover + CapCut-style auto-synced captions + lo-fi music underlay + UGC reactions + app demo cutaways. One JSON spec, one command, one finished MP4.
+No Gemini key, no API keys, no subscription: you log in once with your DansUGC account (OAuth) and
+pay per clip from your credits. Editing and rendering are free in both modes.
 
-[![Watch the example](assets/talking-video/examples/poster.jpg)](https://pub-70f9e589b1c640b49218874baf1c733f.r2.dev/pcos_04_kris_cycle_60_to_28.mp4)
+> Every reaction is a real human creator. Never AI.
 
-▶ [**Watch the 30s example →**](https://pub-70f9e589b1c640b49218874baf1c733f.r2.dev/pcos_04_kris_cycle_60_to_28.mp4)
-
-<video src="https://pub-70f9e589b1c640b49218874baf1c733f.r2.dev/pcos_04_kris_cycle_60_to_28.mp4" controls width="320"></video>
-
-*Real output from a 10-video PCOS Pal batch. The same pipeline shipped 20 AiPixo photo-app ads and 20 Ease quit-vaping ads from a single JSON spec each — see the [end-to-end example below](#example--talking-video-end-to-end).*
-
-## What It Does
-
-ReelClaw is an AI agent skill that automates two distinct UGC pipelines:
-
-### Classic reel pipeline (7–15s)
-
-1. **Source hooks** — Search and purchase UGC reaction clips from [DanSUGC](https://dansugc.com)
-2. **Analyze demos** — Use Gemini AI to find the best segments in screen recordings
-3. **Assemble reels** — FFmpeg-powered editing with text overlays, music, and transitions
-4. **Publish** — Schedule to TikTok & Instagram natively via [DanSUGC Posting](https://dansugc.com) using the secure 3-step upload flow (presign → PUT → `create_post`). See [`references/posting-upload.md`](references/posting-upload.md).
-5. **Track & replicate** — Monitor performance via DanSUGC's analytics proxy and double down on winners
-6. **Format research** — Find viral format ideas in any niche
-7. **Hook research** — Discover proven text hooks from high-performing videos
-
-### `/talking-video` workflow (20–30s) *(new)*
-
-8. **Long-form narrated testimonial ads** — ElevenLabs voiceover with **CapCut-style auto-synced captions** (generated from word-level timestamps, not hand-coded), lo-fi music underlay, UGC reactions, and app demo cutaways. One JSON spec → N finished videos in a single run. See [`references/talking-video.md`](references/talking-video.md).
+Batches are shared with the web app: anything you start here also opens at
+`https://dansugc.com/dashboard/reelclaw?session=<batch_id>`.
 
 ---
 
-## Requirements
+## 60-second quickstart
 
-| Tool | Required for | Where to get |
+### Claude Code
+
+```
+/plugin marketplace add dansugc/reelclaw
+/plugin install reelclaw@dansugc
+```
+
+Then run `/mcp`, select **plugin:reelclaw:dansugc**, and choose **Authenticate** (browser login to
+your DansUGC account). Now ask:
+
+> Make 10 UGC ads for this app with DansUGC ReelClaw. Use the demo in ./demo.mp4.
+
+Or use the slash commands: `/reelclaw:new 10 ./demo.mp4 gen-z, deadpan` (picks the mode),
+`/reelclaw:studio 3 polished ads with ./demo.mp4, snapchat-style captions` (studio mode), and
+`/reelclaw:status`.
+The skill itself is `/reelclaw:reelclaw-ads` (Claude also picks it up automatically).
+
+Shell equivalents: `claude plugin marketplace add dansugc/reelclaw` and
+`claude plugin install reelclaw@dansugc`.
+
+MCP only, no plugin (you lose the workflow skill and commands):
+`claude mcp add --transport http dansugc https://dansugc.com/mcp`, then `/mcp` → **dansugc** → Authenticate.
+
+### OpenAI Codex
+
+Option A — plugin (skill + MCP server in one, updates with `codex plugin marketplace upgrade`):
+
+```sh
+codex plugin marketplace add dansugc/reelclaw
+codex plugin add reelclaw@dansugc
+codex mcp login dansugc
+```
+
+Option B — MCP server + skill via script:
+
+```sh
+codex mcp add dansugc --url https://dansugc.com/mcp
+codex mcp login dansugc
+curl -fsSL https://raw.githubusercontent.com/dansugc/reelclaw/main/codex/install.sh | sh
+```
+
+`install.sh` is POSIX `sh`, idempotent, needs no sudo: it copies the skill into
+`~/.agents/skills/reelclaw-ads` (Codex's user skills directory: `SKILL.md`, all `references/`,
+and the studio `scripts/`) and adds the `dansugc` MCP server if
+it isn't configured yet. Start a new Codex session, then ask:
+
+> $reelclaw-ads Make 10 UGC ads for this app. Use the demo in ./demo.mp4.
+
+> $reelclaw-ads Make 3 polished ads in studio mode with the demo in ./demo.mp4.
+
+Optional: paste [`codex/AGENTS.md`](codex/AGENTS.md) into your project's `AGENTS.md`, and see
+[`codex/config.toml`](codex/config.toml) for the manual `~/.codex/config.toml` block.
+
+### Any other MCP client (Cursor, Claude Desktop, claude.ai, …)
+
+Add a remote (streamable HTTP) MCP server with the URL:
+
+```
+https://dansugc.com/mcp
+```
+
+and log in when prompted (OAuth). You get the `reelclaw_*` tools; for the guided workflow, point
+your agent at [`plugins/reelclaw/skills/reelclaw-ads/SKILL.md`](plugins/reelclaw/skills/reelclaw-ads/SKILL.md).
+
+### Signing in
+
+The DansUGC MCP server uses **OAuth only**: you log in with your DansUGC account in the browser once
+and your agent stays connected. No subscription is needed. DansUGC API keys (`dsk_…`) don't work on
+MCP; they're for the REST API (`/api/v1`) only. If you added the server earlier with an
+`Authorization` header or `bearer_token_env_var`, remove it and log in with OAuth
+(see Troubleshooting).
+
+---
+
+## Which mode?
+
+| | Volume mode | Studio mode |
 |---|---|---|
-| **ffmpeg** + **ffprobe** | Both pipelines | `brew install ffmpeg` / `apt install ffmpeg` |
-| **DanSUGC API key** | UGC clips, analytics, TikTok/IG posting | [dansugc.com](https://dansugc.com) |
-| **Gemini API key** | Demo analysis, virality scoring | [aistudio.google.com](https://aistudio.google.com/apikey) |
-| **ElevenLabs API key** | `/talking-video` workflow only — voiceover + word-level timestamps | [elevenlabs.io](https://elevenlabs.io) |
-| **yt-dlp** *(optional)* | Downloading TikTok music for `/talking-video` | `brew install yt-dlp` |
+| Use for | 6-60 variations fast, testing many hooks | 1-5 polished ads, specific edits, creative control |
+| Formats | reaction + demo | `reaction_demo`, `no_yapping` (silent split-screen tutorial), `greenscreen_reaction` |
+| Renders on | DansUGC servers | your machine (HyperFrames + headless Chrome via npx) |
+| Needs | nothing local | Node 22+, ffmpeg/ffprobe (yt-dlp optional) |
+| Control | hooks, reactions, music | trims, cut timing, caption text/position/style, layout, anything in the HTML |
+| Quality check | you review the files | agent extracts frames and checks font, safe zone, hook timing, cut, audio, then re-renders (max 3 passes) |
 
-> **Heads up on ElevenLabs:** for now the `/talking-video` workflow requires you to set `ELEVENLABS_API_KEY` in your environment. This will soon be integrated into the DanSUGC API so a single DanSUGC key will cover voiceovers too.
+The agent picks based on what you ask ("10 ads" → volume, "3 polished ads" or "move the caption
+up" → studio) and asks once if it's unclear.
 
----
+## How a run goes
 
-## Quick Setup
+1. **Brief**: the agent reads your README, `package.json`, store listing, and landing copy, and
+   shows you a 5-line brief (what it is, who it's for, the painful problem, the aha moment, real
+   proof). It never invents claims, prices, or results.
+2. **Demo**: it finds `.mp4`/`.mov` screen recordings in the repo or asks you for one.
+3. **Research (optional)**: real viral examples via TikTok/Instagram search, $0.02 per query; the
+   agent says how many it plans to run first.
+4. **Hooks**: lowercase, under 80 characters, specific to the pain or the aha; reviewed with you.
+5. Volume mode: ReelClaw matches reactions → you see the **quote** → **nothing renders until you say
+   yes** → MP4s land in `./reelclaw-output/<batch_id>/`.
+6. Studio mode: the agent shortlists library reactions → quotes the clip price → **nothing is bought
+   until you say yes** → it installs one template per reel in `./reelclaw-studio/`, renders, runs the
+   frame-by-frame QA loop, and delivers to `./reelclaw-output/studio/`.
 
-### 1. Install the skill
+## What to expect (studio mode)
 
-```bash
-npx skills add dansugc/reelclaw --all
-```
+Measured end to end on an Apple M1 Max (Node 26, ffmpeg 7.1, `hyperframes@0.7.76`, headless Chrome
+already cached), with 1080×1920 source clips and a 2160×2880 screen recording:
 
-### 2. Connect MCP servers
+| Step | Time |
+|---|---|
+| Install a template (`npx --yes reelclaw-templates@latest reaction_demo …`, ~25 MB download) | 8-11 s |
+| First `npx hyperframes@0.7.76` fetch (npm deps, one-time) | ~11 s here; longer on a cold npm cache (~380 MB) |
+| First render ever on a machine (headless Chrome download, launch, GPU probe) | one-time extra: ~35 s on the DansUGC render bench (not re-measured here; Chrome was cached) |
+| Stage media (re-encode clips with sparse keyframes; 22 s 1080p clip) | ~3 s per clip |
+| Generate composition | < 1 s |
+| Render a 13 s `reaction_demo` reel (390 frames) | 24-28 s |
+| Render a 10.9 s edited reel (extra blurred video layer) | 30 s |
+| Render a 10.9 s `no_yapping` reel | 23-26 s |
+| QA frames + contact sheet + measurements | ~3.5 s |
+| `greenscreen_reaction` background removal (first time per reaction) | ~6.5 s per second of reaction (+ ~168 MB model once) |
 
-```bash
-# DanSUGC — UGC reaction clips + analytics + posting (TikTok + Instagram)
-claude mcp add --transport http -s user dansugc https://dansugc.com/api/mcp \
-  -H "Authorization: Bearer dsk_YOUR_API_KEY"
-```
+A 3-pass QA loop on one reel is about 2 minutes of machine time. Hook variants of an already staged
+reel cost one render each.
 
-> DanSUGC handles UGC clips, analytics, and posting to TikTok/Instagram. A Posting subscription is required for the publishing step.
+## What it costs
 
-### 3. Set environment variables
+No subscription. You pay as you go from your DansUGC credit balance:
 
-```bash
-# Required for the classic pipeline
-export GEMINI_API_KEY="your_gemini_key"
+- **UGC clips you buy.** Library b-roll clips start at $5. In ReelClaw you only pay for creator
+  reactions you don't already own; reactions you own are reused for free.
+- **Editing and rendering: free.** Reaction matching, hooks, overlays, music, and rendering cost
+  nothing, whether hosted (volume) or on your machine (studio).
+- **Research queries** (TikTok/Instagram search and other ScrapeCreators lookups your agent runs
+  through the MCP): $0.02 per query, charged only when the query succeeds. ReelClaw's own research
+  (reaction matching, hooks) is free.
+- The agent always shows the exact price first and waits for an explicit yes: the render quote in
+  volume mode, the clip-purchase quote in studio mode (`purchase_videos` is two-step: a free quote,
+  then the buy). Team members can charge a team's credits instead of their own; the agent always
+  names which account pays. Top up at https://dansugc.com/dashboard/credits.
 
-# Required for /talking-video workflow (will be folded into DanSUGC API soon)
-export ELEVENLABS_API_KEY="your_11labs_key"
-```
+## Privacy
 
-You can also persist these in `.env` and source it before running:
+- DansUGC never receives your code. The agent sends DansUGC only the product brief it wrote (you
+  see it first) and the demo videos you approve.
+- Demo videos are uploaded straight to DansUGC private storage through short-lived signed links
+  (1 hour) and used to render your batch. Download links for finished videos are signed and expire
+  after 24 hours.
+- Batches belong to your DansUGC account (or the team project you choose) and show up in your
+  dashboard.
+- Studio mode sends DansUGC nothing but the searches and purchases: your demo, the templates, the
+  renders, and the QA frames stay on your machine (`./reelclaw-studio/`, `./reelclaw-output/`).
 
-```bash
-# .env
-GEMINI_API_KEY=...
-ELEVENLABS_API_KEY=...
-```
+## Troubleshooting
 
-```bash
-set -a; source .env; set +a
-```
+| Symptom | Fix |
+|---|---|
+| Agent says no `reelclaw_*` tools | The MCP server isn't connected. Claude Code: `/mcp` → authenticate `plugin:reelclaw:dansugc`. Codex: `codex mcp list`, then `codex mcp login dansugc`. |
+| "Needs authentication" / 401 | Log in again (same commands). |
+| `reelclaw_login_required`, or "no longer accepts API keys — reconnect with OAuth" | The server was added with an API key. MCP is OAuth-only now. Claude Code: `claude mcp remove dansugc`, re-add it without `--header` (or use the plugin), then `/mcp` → Authenticate. Codex: delete `bearer_token_env_var` from `[mcp_servers.dansugc]` in `~/.codex/config.toml`, then `codex mcp login dansugc`. |
+| `insufficient_credits` | Top up at https://dansugc.com/dashboard/credits, then ask the agent to re-quote. |
+| Upload fails with `invalid_upload` | The file changed or the size/type didn't match. Ask the agent to add the demo again (it re-measures with `wc -c`). |
+| Upload/download link `invalid_signature` | Link expired (uploads 1 h, downloads 24 h). The agent fetches a fresh one. |
+| Demo over 50 MB | Trim to the 10–30 s that shows the aha moment, or re-export at a lower bitrate. |
+| Codex: tool call timed out during research | The plugin sets `tool_timeout_sec = 120`; for a hand-added server put `tool_timeout_sec = 120` under `[mcp_servers.dansugc]` in `~/.codex/config.toml` (see [`codex/config.toml`](codex/config.toml)). Re-running `reelclaw_advance_batch` resumes where it stopped. |
+| Codex doesn't see the skill | Start a new session. Check `~/.agents/skills/reelclaw-ads/SKILL.md` exists (Option B) or `codex plugin list` shows `reelclaw@dansugc` (Option A). |
+| Studio: `HyperFrames requires Node.js >= 22` | Install Node 22+ (`brew install node` or `nvm install 22`). The template installer's "Node 18+" check is stale. |
+| Studio: render "succeeded" but animations / music fade / font are wrong | The agent's wrapper prints **RENDER WARNINGS** for these silent failures (GSAP or font didn't load, sparse keyframes). It vendors GSAP locally so a CDN hiccup can't drop animations. |
+| Studio: first render is slow | One-time HyperFrames + headless Chrome download via npx. |
+| Something else | The batch is always visible at the `dashboard_url` the agent prints. Support: https://dansugc.com |
 
-### 4. Use it
-
-**Classic pipeline** — tell your AI agent:
-
-> "Use ReelClaw to create 5 UGC reels for my app using shocked reaction hooks"
->
-> "Find me format ideas for beef liver supplements on TikTok"
->
-> "Find hooks for my meditation app"
-
-**Talking-video pipeline** — type `/talking-video` and the agent will:
-
-1. Load `references/talking-video.md` for the full spec
-2. Walk you through the requirements checklist (ElevenLabs key, app demos, reaction source, voice/music preferences)
-3. Write N scripts using one of 5 proven hook families
-4. Fetch reactions from DanSUGC (admin status → direct URLs, otherwise via `purchase_videos`)
-5. Produce all videos in one batch via `assets/talking-video/build_talking_video.py`
-
----
-
-## Example — `/talking-video` end-to-end
-
-> Real run from a quit-vaping app delivery. 20 finished videos in one batch.
-
-**What the user gave us:**
-- `demos/` — 10 screen-recording `.mov` files (onboarding, stats, breathing exercise, plan overview, money saved, etc.)
-- `ease-hooks.md` — 5 hook families with 20 hook variants each (usage reality, money wasted, craving caught, public commitment, before/after)
-- 2 DanSUGC `model_id`s: Alexandros (male) + Anet (female)
-- "20 talking videos please"
-
-**What the skill did:**
-
-1. **Loaded the workflow** — read `references/talking-video.md` for the spec, voice library, music recipe, hook family templates, FB compliance rules.
-
-2. **Confirmed requirements with the user**:
-   - ✅ `ELEVENLABS_API_KEY` in env
-   - ✅ App name: "Ease", CTA: `EASE\non AppStore`
-   - ✅ 10 demos (1080×1920 vertical, 7–11s each)
-   - ✅ 2 models for reaction variety
-   - ✅ 20 videos = 10 per model
-
-3. **Fetched reactions** — DanSUGC search filtered by `model_id` + emotion. Admin status returned `download_url` directly. 39 clips downloaded across shocked / sad / frustrated / calm / happy / determined emotions.
-
-4. **Voice assignment** — male model → Liam (`TX3LPaxmHKxFdv7VOQHJ`); female model → Olivia (`YZHSTqsq1isdXNsFLzBw`). Voice library in `references/talking-video.md`.
-
-5. **Music bed** — reused a pre-baked lo-fi piano bed (`childhood` by daniel & Zamaro), looped + loudness-normalized to −16 LUFS, mixed at 50%.
-
-6. **Wrote 20 scripts** — 4 per hook family, ~75 words each, ending with the standardized CTA. Compliance audit: zero `your [vape|addiction|nicotine|habit]` matches.
-
-7. **Built JSON spec** — `concepts.json` with per-concept timelines (3 reactions → 2 demo cutaways → 1 mid reaction → 1 CTA reaction).
-
-8. **Ran the orchestrator**:
-
-   ```bash
-   # First 5 for review (one per hook family)
-   ONLY="01,06,11,13,17" python3 assets/talking-video/build_talking_video.py concepts.json
-
-   # Remaining 15 after approval
-   ONLY="02,03,04,05,07,08,09,10,12,14,15,16,18,19,20" python3 assets/talking-video/build_talking_video.py concepts.json
-   ```
-
-9. **Output** — 20 × 30.000s MP4s, 1080×1920, AAC 192kbps. Each with VO + auto-synced captions + lo-fi music underlay + big yellow CTA card in the last 4s.
-
-**Time to first 5 videos:** ~6 minutes (including reaction fetch + script writing).
-**Time to all 20:** ~18 minutes total.
-
----
-
-## Minimal `concepts.json` example
-
-The full schema lives in [`references/talking-video.md`](references/talking-video.md). A starter is at [`assets/talking-video/concepts_template.json`](assets/talking-video/concepts_template.json). A single concept looks like:
-
-```json
-{
-  "common": {
-    "elevenlabs_api_key": "",
-    "model_id": "eleven_multilingual_v2",
-    "speed": 1.05,
-    "stability": 0.45,
-    "similarity_boost": 0.8,
-    "style": 0.5,
-    "font": "/Users/you/Library/Fonts/TikTokSansDisplayBlack.ttf",
-    "demos_dir": "/abs/path/to/demos",
-    "reactions_dir": "/abs/path/to/reactions",
-    "out_dir": "/abs/path/to/output/myapp_v1",
-    "out_prefix": "myapp",
-    "music_path": "/abs/path/to/music_bed_30s.mp3",
-    "music_volume": 0.5,
-    "cta_text": "MYAPP\non AppStore",
-    "target_duration": 30.0,
-    "cta_reserve": 4.0,
-    "emphasis_words": ["myapp", "free", "obsessed"]
-  },
-  "concepts": [
-    {
-      "name": "01_deception_linkedin",
-      "voice_id": "x8syuETaTA9JYwAbE2JM",
-      "voice_name": "Ava",
-      "vo_text": "Help, I used MyApp for my LinkedIn and a recruiter replied in two hours...",
-      "timeline": [
-        {"src": "reactions/model/clip1.mp4", "in": 1.0, "dur": 3.0},
-        {"src": "reactions/model/clip2.mp4", "in": 1.0, "dur": 3.0},
-        {"src": "reactions/model/clip3.mp4", "in": 0.5, "dur": 3.0},
-        {"src": "demos/feature_browser.mov", "in": 1.5, "dur": 6.0},
-        {"src": "demos/result_reveal.mov", "in": 2.0, "dur": 6.0},
-        {"src": "reactions/model/clip4.mp4", "in": 2.0, "dur": 4.0},
-        {"src": "reactions/model/clip5.mp4", "in": 2.0, "dur": 5.0}
-      ]
-    }
-  ]
-}
-```
-
-Leave `elevenlabs_api_key` empty in the JSON and the script reads from the `ELEVENLABS_API_KEY` env var (recommended — never commit keys to git).
-
----
-
-## Pre-baking a music bed
-
-The `/talking-video` orchestrator expects the music to already be loudness-normalized so 50% volume means a predictable level. The recipe:
-
-```bash
-# Loop any source (even a 7s TikTok clip), normalize to -16 LUFS, fade in
-ffmpeg -y -stream_loop -1 -i "SOURCE.mp3" -t 32 \
-  -af "loudnorm=I=-16:TP=-1.5:LRA=11,afade=t=in:st=0:d=0.4" \
-  -c:a libmp3lame -q:a 2 "music_bed_30s.mp3"
-```
-
-Suggested sources (all tested and working under VO):
-- **`childhood` — daniel & Zamaro** *(lo-fi piano, default for testimonial content)*
-- `Je te laisserai des mots` — Patrick Watson *(emotional/transformation arcs)*
-- Any instrumental ≥7s — looper handles the rest
-
-Use `yt-dlp -x --audio-format mp3 "TIKTOK_URL"` to grab music from a TikTok link.
-
----
-
-## Safe ElevenLabs voices
-
-Listed in [`references/talking-video.md`](references/talking-video.md). All 8 (4 built-in + 4 shared-library) work directly via the standard TTS endpoint with no extra setup. Highlights:
-
-| Name | voice_id | Best for |
-|---|---|---|
-| Jessica | `cgSgspJ2msm6clMCkdW9` | Playful Gen-Z confessional |
-| Aria | `9BWtsMINqrJLrRacOk9x` | Confident results testimonial |
-| Olivia | `YZHSTqsq1isdXNsFLzBw` | Smooth, persuasive young female |
-| Ava | `x8syuETaTA9JYwAbE2JM` | Energetic UGC, young South African |
-| Liam | `TX3LPaxmHKxFdv7VOQHJ` | Energetic young male, social-media creator |
-| Daphne | `cR39HTrtXbjvEP4CNYFx` | Sweet, calm, friendly |
-
----
-
-## How the auto-sync captions work
-
-This is the differentiator vs. hand-timed captions:
-
-1. Call ElevenLabs `/v1/text-to-speech/{voice}/with-timestamps` → returns audio + per-character start/end times
-2. Group characters into words (split on whitespace)
-3. Group words into 2-3 word phrases (break on punctuation, max 1.1s duration per phrase)
-4. After `atempo`-fitting the VO to target duration, divide every phrase timestamp by the same tempo factor
-5. Each phrase renders as a `drawtext` filter with `enable='between(t,start,end)'`
-6. Big CTA card overlays the last 4s; body captions are capped to end at `video_dur - 4`
-
-Result: captions hit on the exact syllable of the VO, like CapCut auto-captions. No manual timing.
-
----
-
-## The Pipeline (classic)
+## What's in this repo
 
 ```
-DanSUGC (hooks + analytics + posting) + Demos (Gemini AI) + Text + Music
-    | FFmpeg Assembly (1080x1920, 15s max)
-    | DanSUGC Posting (TikTok + Instagram)
-    | DanSUGC Analytics Proxy (tracking)
-    | Replicate Winners
+.claude-plugin/marketplace.json        Claude Code marketplace "dansugc" (Codex reads it too)
+.agents/plugins/marketplace.json       Codex-native marketplace "dansugc"
+plugins/reelclaw/
+  .claude-plugin/plugin.json           Claude Code plugin manifest
+  .codex-plugin/plugin.json            Codex plugin manifest
+  .mcp.json                            dansugc → https://dansugc.com/mcp (HTTP, OAuth, 120 s tool timeout)
+  skills/reelclaw-ads/                 the workflow skill (single source for both clients)
+    SKILL.md                           router: shared steps, volume mode, studio mode
+    references/
+      product-brief.md                 reading the product from the repo, truthfully
+      research.md                      paid viral research ($0.02/query) and winner thresholds
+      hooks.md                         hook rules, formats, per-template voice, captions
+      footage.md                       DansUGC reactions: search, compare, two-step buy, trims; demo prep
+      volume-mode.md                   hosted reelclaw_* flow: create → quote → yes → render → download
+      studio-templates.md              the 3 HyperFrames templates' real inputs, wrapper, troubleshooting
+      qa-checklist.md                  what to look for in the QA frames + render-warning fixes
+      hyperframes-editing.md           editing the generated composition (tested recipes)
+      publishing.md                    DansUGC Posting: presign → PUT → create_post
+      errors.md, tools.md              MCP error playbook, tool map (incl. accounts/teams)
+    scripts/
+      run-generator.mjs                safe params-JSON wrapper: stage media, generate, vendor GSAP,
+                                       render with the pinned HyperFrames, scan the log, run QA
+      qa-frames.sh                     QA frames, safe-band overlay, contact sheet, measurements
+    agents/openai.yaml                 Codex UI metadata + MCP dependency
+  commands/{new,studio,status}.md      Claude Code slash commands (/reelclaw:new, /reelclaw:studio, /reelclaw:status)
+codex/
+  install.sh                           skill + MCP installer for Codex (curl | sh)
+  config.toml                          manual ~/.codex/config.toml block
+  AGENTS.md                            snippet for your project's AGENTS.md
+SKILL.md, references/, assets/         the original DIY ReelClaw skill (local ffmpeg pipeline)
 ```
 
-## The Pipeline (`/talking-video`)
+The root `SKILL.md` is the older do-it-yourself ReelClaw skill that assembles reels locally with
+ffmpeg and your own keys. It's unchanged and still works (its guide is in [README-diy.md](README-diy.md));
+the plugin above is the hosted version and needs none of that.
 
-```
-ElevenLabs VO + char-level timestamps
-    | Atempo-fit to target duration (30s)
-    | Char alignment -> 2-3 word phrases
-    | DanSUGC reactions + app demos -> 7-segment timeline
-    | FFmpeg concat
-    | drawtext per phrase + big CTA card
-    | amix with normalized music bed at 50%
-    | H.264 / AAC 192k / faststart
-```
+Maintainers: bump `version` in both `plugins/reelclaw/.claude-plugin/plugin.json` and
+`plugins/reelclaw/.codex-plugin/plugin.json` to ship an update (a set version pins users until it
+changes). Validate with `claude plugin validate . && claude plugin validate ./plugins/reelclaw`.
 
-## Key Rules
+## Verified against (2026-09-28)
 
-- **15 seconds max** per reel for the classic pipeline (`/talking-video` is exempt — target 20–30s)
-- **TikTok Sans font** for all text overlays
-- **Green Zone positioning** — text placed only in platform-safe areas
-- **One video per account** — unique content per social account
-- **Auto-audit `your [attribute]`** — Facebook personal-attributes rule for the `/talking-video` workflow
+Claude Code 2.1.283 and Codex CLI 0.157.0, plus:
 
-## Compatible Agents
+- Claude Code — create a marketplace: https://code.claude.com/docs/en/plugin-marketplaces
+- Claude Code — marketplace reference (schema, sources, reserved names): https://code.claude.com/docs/en/plugins/marketplace-reference
+- Claude Code — plugin manifest reference (`plugin.json`, standard layout, `.mcp.json`): https://code.claude.com/docs/en/plugins-reference
+- Claude Code — MCP (`--transport http`, `/mcp` OAuth, plugin MCP servers and tool naming): https://code.claude.com/docs/en/mcp
+- Claude Code — skills (frontmatter, `$ARGUMENTS`, `/plugin:skill` namespacing, commands merged into skills): https://code.claude.com/docs/en/skills
+- Agent Skills open standard (SKILL.md frontmatter limits, progressive disclosure): https://agentskills.io/specification
+- Codex — MCP (`[mcp_servers.<name>]`, `url`, `codex mcp add --url`, `codex mcp login`): https://developers.openai.com/codex/mcp (→ learn.chatgpt.com/docs/extend/mcp?surface=cli)
+- Codex — skills (`~/.agents/skills`, repo `.agents/skills`, `$skill` invocation, `agents/openai.yaml`): https://developers.openai.com/codex/skills (→ learn.chatgpt.com/docs/build-skills)
+- Codex — plugins (`.codex-plugin/plugin.json`, marketplace at `.agents/plugins/marketplace.json` or legacy `.claude-plugin/marketplace.json`, `codex plugin marketplace add owner/repo`): https://developers.openai.com/plugins/build/plugins
 
-Works with any agent that supports the Skills format:
-- Claude Code
-- Cursor
-- Cline
-- Codex
-- Gemini CLI
-- Continue
-- Windsurf
-- OpenCode
+- reelclaw-templates installer (`cli/bin/index.mjs`, npm `reelclaw-templates@0.1.0`, templates
+  fetched from `danielhangan/reelclaw-templates@main`, `--ref` pins a commit) and the three
+  `new-reel.mjs` generators; `hyperframes@0.7.76` (`engines.node >=22`, `render --help`).
 
-## License
-
-MIT
+Local checks run: `claude plugin validate --strict` (marketplace + plugin: passed); isolated
+`claude plugin marketplace add` + `claude plugin install reelclaw@dansugc` (installed; server shows
+as `plugin:reelclaw:dansugc`, "Needs authentication"); isolated `codex plugin marketplace add` +
+`codex plugin add reelclaw@dansugc` (installed; `codex mcp list` shows `dansugc`, "Not logged in");
+`install.sh` run twice under `dash` and `sh` (idempotent). Studio mode (1.1.0): real renders of
+`reaction_demo` (3 QA passes incl. a composition edit) and `no_yapping` (2 passes) following the
+skill literally, a forced GSAP-CDN failure and a forced font fallback to confirm the render-warning
+scan, and flag-injection refusal in the wrapper.
