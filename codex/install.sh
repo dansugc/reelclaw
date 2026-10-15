@@ -1,10 +1,11 @@
 #!/bin/sh
-# DansUGC ReelClaw — install the `reelclaw-ads` skill for OpenAI Codex.
+# DansUGC ReelClaw — install the `reelclaw` skill for OpenAI Codex.
 #
 #   curl -fsSL https://raw.githubusercontent.com/dansugc/reelclaw/main/codex/install.sh | sh
 #
 # What it does (safe to re-run; no sudo):
-#   1. Copies the skill into ~/.agents/skills/reelclaw-ads (Codex's user skills directory).
+#   1. Copies the skill into ~/.agents/skills/reelclaw (Codex's user skills directory) and
+#      removes the retired ~/.agents/skills/reelclaw-ads skill if present.
 #   2. If the `codex` CLI is installed and no `dansugc` MCP server is configured, adds it:
 #        codex mcp add dansugc --url https://dansugc.com/mcp
 #   3. Prints next steps (OAuth login).
@@ -16,7 +17,8 @@
 #   REELCLAW_SKIP_MCP=1  don't touch Codex MCP config
 set -eu
 
-SKILL_NAME="reelclaw-ads"
+SKILL_NAME="reelclaw"
+OLD_SKILL_NAME="reelclaw-ads"
 REF="${REELCLAW_REF:-main}"
 RAW_BASE="https://raw.githubusercontent.com/dansugc/reelclaw/${REF}"
 SKILL_SRC="plugins/reelclaw/skills/${SKILL_NAME}"
@@ -30,8 +32,7 @@ references/product-brief.md
 references/hooks.md
 references/research.md
 references/footage.md
-references/volume-mode.md
-references/studio-templates.md
+references/templates.md
 references/qa-checklist.md
 references/hyperframes-editing.md
 references/publishing.md
@@ -84,7 +85,15 @@ mv "$STAGE" "$DEST"
 rm -rf "${DEST}.old"
 say "  skill -> ${DEST}"
 
-# MCP server (the skill needs the reelclaw_* tools from https://dansugc.com/mcp).
+# ReelClaw 2.0 replaced the `reelclaw-ads` skill with `reelclaw`; drop the old one so Codex
+# doesn't load two skills that disagree (the old one calls removed MCP render tools).
+OLD_DEST="${SKILLS_DIR}/${OLD_SKILL_NAME}"
+if [ -d "$OLD_DEST" ] && [ -f "${OLD_DEST}/SKILL.md" ]; then
+  rm -rf "$OLD_DEST"
+  say "  removed retired skill ${OLD_DEST}"
+fi
+
+# MCP server (the skill needs the clip library, viral-format and music tools from https://dansugc.com/mcp).
 MCP_NOTE=""
 if [ "${REELCLAW_SKIP_MCP:-0}" = "1" ]; then
   MCP_NOTE="skipped (REELCLAW_SKIP_MCP=1)"
@@ -111,15 +120,12 @@ Done. Next steps:
   1. Log in with your DansUGC account (OAuth, opens your browser; API keys don't work on MCP):
        codex mcp login dansugc
   2. Restart Codex (or start a new session) so it picks up the skill.
-  3. In your project, ask:
-       \$reelclaw-ads Make 10 UGC ads for this app. Use the demo in ./demo.mp4.
-     or, for 1-5 polished ads edited locally (studio mode; needs Node 22+ and ffmpeg):
-       \$reelclaw-ads Make 3 polished ads in studio mode with the demo in ./demo.mp4.
+  3. In your project, ask (needs Node 22+ and ffmpeg; reels are edited and rendered locally):
+       \$reelclaw Make 3 UGC ads for this app. Use the demo in ./demo.mp4.
 
 Needs a Growth or Scale plan; on top of it you pay as you go from DansUGC credits. Editing and
-rendering are included in both modes; you pay only for reactions you don't already own (library
-clips are 11 credits each, less your plan's discount) and research queries your agent runs
-(0.02 credits each, only on success). Nothing renders until
-you approve the quoted price.
+rendering happen on your machine and are free; you pay only for reactions you don't already own
+(library clips are 11 credits each, less your plan's discount) and research queries your agent
+runs (0.02 credits each, only on success). Nothing is bought until you approve the quoted price.
 Top up: https://dansugc.com/dashboard/credits  Docs: https://github.com/dansugc/reelclaw
 EOF

@@ -1,6 +1,6 @@
 # Footage: reactions from the DansUGC library + the demo
 
-## Reactions (studio mode)
+## Reactions
 
 Every DansUGC reaction is a real human creator. Pick the emotion first, then the clip.
 

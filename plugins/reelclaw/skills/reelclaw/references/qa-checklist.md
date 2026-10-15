@@ -1,4 +1,4 @@
-# Studio QA checklist (mandatory before delivering)
+# QA checklist (mandatory before delivering)
 
 `run-generator.mjs --render` runs `scripts/qa-frames.sh` for you. By hand:
 

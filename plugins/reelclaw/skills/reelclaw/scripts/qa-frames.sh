@@ -1,5 +1,5 @@
 #!/bin/sh
-# DansUGC ReelClaw studio mode: QA frames + measurements for a rendered reel.
+# DansUGC ReelClaw: QA frames + measurements for a rendered reel.
 #
 #   sh qa-frames.sh <video.mp4> <out-dir> [cut-seconds]
 #

@@ -91,7 +91,7 @@ unless the user asks for motion (house rule: a caption is fully visible on its f
 ```
 (`hook-position` covers top/center/bottom; use this only for exact placement.)
 
-**Snapchat-style bar** (the hosted engine's `snapchat` caption style: full-width black bar at 55%,
+**Snapchat-style bar** (the `snapchat` caption style: full-width black bar at 55%,
 medium weight, no stroke, 42 px). Append inside `<style>` (scoped to hook2 here), and set the size
 with `fitHook("<name>-hook2-wrap", 42)` as above:
 ```css

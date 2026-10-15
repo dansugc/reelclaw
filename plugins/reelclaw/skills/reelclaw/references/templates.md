@@ -1,6 +1,6 @@
-# Studio templates (reelclaw-templates + HyperFrames)
+# Templates (reelclaw-templates + HyperFrames)
 
-Studio mode uses the public templates at `github.com/danielhangan/reelclaw-templates`, installed
+ReelClaw uses the public templates at `github.com/danielhangan/reelclaw-templates`, installed
 with `npx --yes reelclaw-templates@latest <template> <dir>`. Each installed directory is a
 self-contained HyperFrames project: `new-reel.mjs` (generator), `assets/fonts/TikTokSans-Variable.ttf`
 (SIL OFL), `RULES.md` (platform rules), `CLAUDE.md`/`AGENTS.md`, `package.json` (pins

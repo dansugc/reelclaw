@@ -1,7 +1,6 @@
 # Writing the product brief from a repo
 
-The brief is what the engine uses to match reactions and write hooks, and what you use to rewrite
-them. A vague brief produces vague ads. A made-up brief produces ads that get the user in trouble.
+The brief is what you use to pick formats and reactions and to write the hooks. A vague brief produces vague ads. A made-up brief produces ads that get the user in trouble.
 
 ## Where the truth lives (check in this order)
 

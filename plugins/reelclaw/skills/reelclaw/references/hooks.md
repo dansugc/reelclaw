@@ -5,8 +5,8 @@ your hook on top, then the product demo. The hook is the only text most viewers 
 the reaction make sense and make the viewer need the demo. Treat hook writing as the main job; the
 render is the cheap part.
 
-In volume mode the hosted engine places, sizes, and times the text (TikTok Sans, green zone). In
-studio mode the template does the same, and you control position, second captions, and timing.
+The template places, sizes, and times the text (TikTok Sans, green zone); you control position,
+second captions, and timing.
 
 ## Rules
 
@@ -22,7 +22,7 @@ studio mode the template does the same, and you control position, second caption
   the demo answers. Brand only when the brand itself is the hook.
 - **Truthful.** No claim the brief can't back (numbers, "free", "#1", results, medical/financial
   outcomes). Numbers must come from the repo, the demo on screen, or the user.
-- **Vary formats** across a batch (at least 3) so the algorithm can pick a winner.
+- **Vary formats** across a set of variants (at least 3) so the algorithm can pick a winner.
 
 ## Formats
 
@@ -41,7 +41,7 @@ studio mode the template does the same, and you control position, second caption
 | Nobody talks about | `nobody tells you <hidden truth>` | nobody tells you reels are built to never end |
 | I wish | `i wish someone told me <lesson> sooner` | i wish someone told me to lock my apps sooner |
 
-## Per template (studio mode)
+## Per template
 
 - **reaction_demo**: `hook` over a ≤ 3 s reaction; the demo must pay it off within ~2 s of the cut.
   Add `hook2` as the **payoff line** over the demo ("12/12 resisted", "real creators. zero
@@ -53,12 +53,12 @@ studio mode the template does the same, and you control position, second caption
 - **greenscreen_reaction**: community voice, third person, like a fan post: "please tag the app
   developer bc they lowkey saved my life", "somebody find me the developer of this app".
 
-## Rewriting the engine's hooks (volume mode)
+## Writing a set of variants
 
-1. Read each engine hook next to its reaction (emotion).
-2. Keep the good ones. Rewrite generic ones with the brief's **pain** and **aha**.
-3. Check each against the rules (length, truth, emotion match). At least 3 formats per batch.
-4. Show the user the table, then save with `reelclaw_update_batch { hooks: [{ id, text }] }`.
+1. Draft 2-3 hooks per reaction, built on the brief's **pain** and **aha** (and the viral formats
+   you picked, if any).
+2. Check each against the rules (length, truth, emotion match). At least 3 formats across a set.
+3. Show the user the table, then write one params file per hook (SKILL.md section 3).
 
 ## Anti-patterns
 

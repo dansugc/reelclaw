@@ -20,7 +20,7 @@ reelclaw_trending_music { category, country?, period?, limit?, commercial_only?,
   every other research tool.
 - Result: `songs: [{ rank, title, artist, duration_seconds, uses, trend, category_videos,
   category_video_plays, label_track, commercial_music_flag, cover_url, preview_url, music_link,
-  example_video_url }]`, `music_links` (the top 5, ready to pass on), `trend_basis`,
+  example_video_url }]`, `music_links` (the top 5 sound pages), `trend_basis`,
   `license_note`, `queries`, `credits_charged`, `cached`, `next_action`.
 
 How it ranks: it searches recent TikTok videos about the category and scores the sounds they use by
@@ -37,25 +37,11 @@ available, so don't claim "#1 on TikTok".
 2. **Prefer `rising`**, then `popular`. A rising sound in the niche beats a huge generic one.
 3. **Length ≥ the reel.** `duration_seconds` is TikTok's clip of the song (often 30-60 s); skip
    anything shorter than the reel (~10-20 s for reaction ads).
-4. **Give variety:** pass 3-5 links; ReelClaw picks one at random per video, which doubles as a
-   sound test.
+4. **Give variety across variants:** use 2-3 different songs across a set of hook variants; it
+   doubles as a sound test.
 5. Tell the user what you picked in one line each (title · artist · trend) and why.
 
-## Volume mode
-
-When a batch reaches `ready` with no music (`music_links: []` and nothing suggested; the
-`next_action` says so) and the user hasn't asked for silent videos:
-
-1. `reelclaw_trending_music { category, project_id? }` (same account as the batch).
-2. `reelclaw_update_batch { batch_id, music_links: <its music_links> }`, **before** `reelclaw_quote`
-   (an edit after a quote invalidates it). Or pass the same list to both `reelclaw_quote` and
-   `reelclaw_render`.
-
-The server never looks music up on its own; it's always your call, so the cost stays visible.
-Skip it when the batch has a `reference_url` overlay (it reuses the reference's soundtrack) or the
-user already gave links.
-
-## Studio mode
+## Using a song
 
 Templates take `music` as a local file or a direct audio URL. Use the song's `preview_url`:
 
@@ -70,9 +56,9 @@ usually 30-60 s); its URL has no file extension, so download it rather than pass
 generator would treat it as a page link). Links are signed CDN URLs that can expire: download right
 away; if the download returns 403, pick another song or run the lookup again later.
 
-Don't pass `music_link` (a TikTok sound page) to a studio template: yt-dlp can't read TikTok sound
-pages (its extractor is marked broken, "No working app info is available"). Page links only work in
-volume mode, where the ReelClaw server resolves them.
+Don't pass `music_link` (a TikTok sound page) to a template: yt-dlp can't read TikTok sound pages
+(its extractor is marked broken, "No working app info is available"). Use `music_link` only to show
+the user the sound on TikTok.
 
 ## Licensing: organic vs ads
 
@@ -87,5 +73,5 @@ Always relay `license_note`. In short:
   the exact track in TikTok Ads Manager (or, for TikTok photo posts, the DansUGC Posting music
   picker, which lists the account's Commercial Music Library). DansUGC doesn't clear music rights.
   Never tell the user a sound is "cleared for ads".
-- Unsure, or no commercial tracks came back? Render the ad versions without music
-  (`music_links: []`) and add a Commercial Music Library track in Ads Manager.
+- Unsure, or no commercial tracks came back? Render the ad versions without music (no `music`
+  param) and add a Commercial Music Library track in Ads Manager.

@@ -12,12 +12,12 @@ list_posting_accounts {}          # account UUIDs, platform, username
 ```
 
 **One unique video per account.** Never post the same MP4 to several accounts; make a hook variant
-per account (studio: seconds per variant). Stagger multiple accounts by ~5 minutes.
+per account (a hook variant renders in seconds). Stagger multiple accounts by ~5 minutes.
 
 ## 2. Upload (presign → PUT, within 5 minutes)
 
 ```sh
-FILE=./reelclaw-output/studio/<name>.mp4
+FILE=./reelclaw-output/<name>.mp4
 SIZE=$(wc -c < "$FILE" | tr -d ' ')
 ```
 

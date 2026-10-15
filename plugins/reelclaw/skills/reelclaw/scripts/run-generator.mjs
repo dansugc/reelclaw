@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// DansUGC ReelClaw studio mode: run a reelclaw-templates generator safely, vendor GSAP,
+// DansUGC ReelClaw: run a reelclaw-templates generator safely, vendor GSAP,
 // render with the template's pinned HyperFrames version, then run the QA frame extraction.
 //
 //   node run-generator.mjs <template-dir> <params.json> [--render] [--quality standard|high|draft] [--no-qa]
@@ -19,7 +19,7 @@
 //   * reaction_demo / no_yapping `--render` call an UNPINNED `npx hyperframes`. We render with the
 //     exact version pinned in the template's package.json instead.
 //
-// params.json: keys are the generator's flag names without "--" (see references/studio-templates.md).
+// params.json: keys are the generator's flag names without "--" (see references/templates.md).
 //   { "name": "pov-screen-time", "reaction": "footage/reaction-1.mp4", "demo": "demo.mp4",
 //     "hook": "my screen time was 9 hours. was.", "trim": 0.4 }
 //   Arrays repeat a flag ("step": ["go to claude", "paste ur script :: 4"]).

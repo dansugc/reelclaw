@@ -13,8 +13,8 @@ Before the first one, tell the user the plan, the cap, and (for a team) which te
 > I'll run 4 searches (0.08 credits) to find what's working for habit apps on TikTok and Reels. OK?
 
 Default cap 5 queries per session unless the user asked for deep research. Skip research entirely
-when the user already knows the angle, has hooks, or says no. ReelClaw's own reaction matching and
-hook drafting (volume mode) are free.
+when the user already knows the angle, has hooks, or says no. `reelclaw_suggest_formats` (viral formats with
+evidence) and `search_videos` are free; try them first.
 
 ## What to search (in order, stop when you have enough)
 
@@ -35,7 +35,7 @@ For the top 10-20 results by engagement:
   Callout ("<audience> you need this") · Confession · Question · Us vs them · Stakes · Statistic ·
   "Nobody talks about".
 - **Format**: reaction → demo, split-screen tutorial ("no yapping"), greenscreen reaction,
-  talking head, slideshow. Map to a studio template or volume mode.
+  talking head, slideshow. Map it to a template (`reaction_demo`, `no_yapping`, `greenscreen_reaction`) or a composition edit.
 - **Signals**: likes/views > 10 % and many comments = the hook triggered something. Comments asking
   "what app??" = curiosity gap worked.
 
@@ -58,4 +58,4 @@ URL, 0.02 credits) and compare:
 | Shares / views | 0.3 %+ | 1 %+ | 3 %+ |
 
 Replicate a winner: same hook structure and emotion, a different creator, the same demo angle,
-new accounts. Iterate hooks before footage (hook variants cost seconds in studio mode).
+new accounts. Iterate hooks before footage (a hook variant re-renders in seconds).

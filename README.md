@@ -1,31 +1,34 @@
 # DansUGC ReelClaw for coding agents
 
 Make short-form UGC ads (TikTok, Reels, Shorts) for the product you're building — from inside
-Claude Code or OpenAI Codex.
+Claude Code, OpenAI Codex, or any agent that speaks MCP.
 
 Your agent reads your repo to understand the product, finds your demo video, writes TikTok-native
-hooks, and pairs them with real human creator reactions from the DansUGC library. Two modes:
+hooks, and pairs them with real human creator reactions from the DansUGC library. Then it **edits
+and renders every reel on your machine** with the
+[ReelClaw HyperFrames templates](https://github.com/danielhangan/reelclaw-templates) (TikTok Sans,
+safe-zone captions), **looks at the rendered frames** against a QA checklist, and fixes what's off
+before handing you the file. You can ask for any edit in plain words: "move the caption up",
+"cut on her reaction", "snapchat-style text", "5 more hook variants".
 
-- **Volume mode** (hosted): the agent drives the **DansUGC ReelClaw** engine over MCP. It matches
-  reactions, overlays hooks in the safe zone, adds music, and renders 6-60 vertical MP4s on DansUGC
-  servers. Nothing to install locally.
-- **Studio mode** (local): for 1-5 polished ads or specific edits. The agent installs a
-  [reelclaw HyperFrames template](https://github.com/danielhangan/reelclaw-templates) per reel,
-  buys only the clips you approve, renders on your machine (TikTok Sans, safe-zone captions), then
-  **looks at the rendered frames** against a QA checklist and fixes what's off before handing you
-  the file. Needs Node 22+ and ffmpeg.
+> **ReelClaw 2.0: one skill, local editing.** The DansUGC MCP server no longer renders videos
+> (the hosted batch/render tools are gone). It supplies the clip library, viral-format suggestions,
+> trending music, research and posting; your agent does the editing. The old do-it-yourself skill
+> (root `SKILL.md`, `README-diy.md`, `references/`, `assets/`) is retired too: there is only one
+> ReelClaw skill now, `reelclaw`. If you installed `reelclaw-ads` before, reinstall (below).
 
 No Gemini key, no API keys: you log in once with your DansUGC account (OAuth). Needs a Growth or
-Scale plan; on top of it you pay per clip from your credits. Editing and rendering are included in both modes.
+Scale plan; on top of it you pay per clip from your credits. Editing and rendering are local and
+free. Needs Node 22+ and ffmpeg.
 
 > Every reaction is a real human creator. Never AI.
-
-Batches are shared with the web app: anything you start here also opens at
-`https://dansugc.com/dashboard/reelclaw?session=<batch_id>`.
 
 ---
 
 ## 60-second quickstart
+
+You need two things: the **`dansugc` MCP server** (`https://dansugc.com/mcp`, OAuth) and the
+**`reelclaw` skill**. The Claude Code and Codex plugins bundle both.
 
 ### Claude Code
 
@@ -37,18 +40,16 @@ Batches are shared with the web app: anything you start here also opens at
 Then run `/mcp`, select **plugin:reelclaw:dansugc**, and choose **Authenticate** (browser login to
 your DansUGC account). Now ask:
 
-> Make 10 UGC ads for this app with DansUGC ReelClaw. Use the demo in ./demo.mp4.
+> Make 3 UGC ads for this app with DansUGC ReelClaw. Use the demo in ./demo.mp4.
 
-Or use the slash commands: `/reelclaw:new 10 ./demo.mp4 gen-z, deadpan` (picks the mode),
-`/reelclaw:studio 3 polished ads with ./demo.mp4, snapchat-style captions` (studio mode), and
-`/reelclaw:status`.
-The skill itself is `/reelclaw:reelclaw-ads` (Claude also picks it up automatically).
+Or use the slash command: `/reelclaw:new 3 ./demo.mp4 gen-z, deadpan, snapchat-style captions`.
+The skill itself is `/reelclaw:reelclaw` (Claude also picks it up automatically).
 
 Shell equivalents: `claude plugin marketplace add dansugc/reelclaw` and
 `claude plugin install reelclaw@dansugc`.
 
-MCP only, no plugin (you lose the workflow skill and commands):
-`claude mcp add --transport http dansugc https://dansugc.com/mcp`, then `/mcp` → **dansugc** → Authenticate.
+Updating from 1.x (terminal): `claude plugin marketplace update dansugc`, then
+`claude plugin update reelclaw@dansugc`, then restart Claude Code.
 
 ### OpenAI Codex
 
@@ -69,52 +70,38 @@ curl -fsSL https://raw.githubusercontent.com/dansugc/reelclaw/main/codex/install
 ```
 
 `install.sh` is POSIX `sh`, idempotent, needs no sudo: it copies the skill into
-`~/.agents/skills/reelclaw-ads` (Codex's user skills directory: `SKILL.md`, all `references/`,
-and the studio `scripts/`) and adds the `dansugc` MCP server if
-it isn't configured yet. Start a new Codex session, then ask:
+`~/.agents/skills/reelclaw` (Codex's user skills directory: `SKILL.md`, all `references/`, and the
+`scripts/`), removes a retired `~/.agents/skills/reelclaw-ads`, and adds the `dansugc` MCP server
+if it isn't configured yet. Start a new Codex session, then ask:
 
-> $reelclaw-ads Make 10 UGC ads for this app. Use the demo in ./demo.mp4.
-
-> $reelclaw-ads Make 3 polished ads in studio mode with the demo in ./demo.mp4.
+> $reelclaw Make 3 UGC ads for this app. Use the demo in ./demo.mp4.
 
 Optional: paste [`codex/AGENTS.md`](codex/AGENTS.md) into your project's `AGENTS.md`, and see
 [`codex/config.toml`](codex/config.toml) for the manual `~/.codex/config.toml` block.
 
-### Any other MCP client (Cursor, Claude Desktop, claude.ai, …)
+### Any other agent (Cursor, OpenCode, Gemini CLI, Kimi Code, VS Code, Zed, …)
 
-Add a remote (streamable HTTP) MCP server with the URL:
+1. Add a remote (streamable HTTP) MCP server named `dansugc` with the URL `https://dansugc.com/mcp`
+   (no headers) and log in when prompted (OAuth).
+2. Install the skill with the open [`skills`](https://github.com/vercel-labs/skills) CLI:
 
-```
-https://dansugc.com/mcp
-```
+   ```sh
+   npx skills add dansugc/reelclaw/plugins/reelclaw/skills/reelclaw -a <agent> -y
+   ```
 
-and log in when prompted (OAuth). You get the `reelclaw_*` tools; for the guided workflow, point
-your agent at [`plugins/reelclaw/skills/reelclaw-ads/SKILL.md`](plugins/reelclaw/skills/reelclaw-ads/SKILL.md).
+   (`<agent>` is the skills CLI id, e.g. `cursor`, `opencode`, `gemini-cli`; add `-g` for every
+   project.) Clients that upload skills by hand (claude.ai, Claude Desktop): upload the
+   [`plugins/reelclaw/skills/reelclaw`](plugins/reelclaw/skills/reelclaw) folder.
 
 ### Signing in
 
 The DansUGC MCP server uses **OAuth only**: you log in with your DansUGC account in the browser once
 and your agent stays connected. Your account needs a Growth or Scale plan (team members use their
-team owner's plan). DansUGC API keys (`dsk_…`) don't work on
-MCP; they're for the REST API (`/api/v1`) only. If you added the server earlier with an
-`Authorization` header or `bearer_token_env_var`, remove it and log in with OAuth
-(see Troubleshooting).
+team owner's plan). DansUGC API keys (`dsk_…`) don't work on MCP; they're for the REST API
+(`/api/v1`) only. If you added the server earlier with an `Authorization` header or
+`bearer_token_env_var`, remove it and log in with OAuth (see Troubleshooting).
 
 ---
-
-## Which mode?
-
-| | Volume mode | Studio mode |
-|---|---|---|
-| Use for | 6-60 variations fast, testing many hooks | 1-5 polished ads, specific edits, creative control |
-| Formats | reaction + demo | `reaction_demo`, `no_yapping` (silent split-screen tutorial), `greenscreen_reaction` |
-| Renders on | DansUGC servers | your machine (HyperFrames + headless Chrome via npx) |
-| Needs | nothing local | Node 22+, ffmpeg/ffprobe (yt-dlp optional) |
-| Control | hooks, reactions, music | trims, cut timing, caption text/position/style, layout, anything in the HTML |
-| Quality check | you review the files | agent extracts frames and checks font, safe zone, hook timing, cut, audio, then re-renders (max 3 passes) |
-
-The agent picks based on what you ask ("10 ads" → volume, "3 polished ads" or "move the caption
-up" → studio) and asks once if it's unclear.
 
 ## How a run goes
 
@@ -122,16 +109,28 @@ up" → studio) and asks once if it's unclear.
    shows you a 5-line brief (what it is, who it's for, the painful problem, the aha moment, real
    proof). It never invents claims, prices, or results.
 2. **Demo**: it finds `.mp4`/`.mov` screen recordings in the repo or asks you for one.
-3. **Research (optional)**: real viral examples via TikTok/Instagram search, 0.02 credits per query; the
-   agent says how many it plans to run first.
-4. **Hooks**: lowercase, under 80 characters, specific to the pain or the aha; reviewed with you.
-5. Volume mode: ReelClaw matches reactions → you see the **quote** → **nothing renders until you say
-   yes** → MP4s land in `./reelclaw-output/<batch_id>/`.
-6. Studio mode: the agent shortlists library reactions → quotes the clip price → **nothing is bought
-   until you say yes** → it installs one template per reel in `./reelclaw-studio/`, renders, runs the
-   frame-by-frame QA loop, and delivers to `./reelclaw-output/studio/`.
+3. **Formats (free)**: unsure what to make? It asks DansUGC which formats went viral in your niche
+   (with example TikToks and views) and you pick.
+4. **Research (optional)**: real viral examples via TikTok/Instagram search, 0.02 credits per
+   query; the agent says how many it plans to run first.
+5. **Hooks**: lowercase, under 80 characters, specific to the pain or the aha; reviewed with you.
+6. **Footage**: it shortlists library reactions → quotes the clip price → **nothing is bought until
+   you say yes** (clips you already own are free).
+7. **Edit + render + QA**: one template per concept in `./reelclaw-studio/`, rendered locally, then
+   a frame-by-frame QA loop (font, safe zone, hook timing, the cut, audio; max 3 passes).
+8. **Deliver**: finals in `./reelclaw-output/`. Ask for more hook variants, another template, any
+   edit, or publishing through DansUGC Posting.
 
-## What to expect (studio mode)
+| Template | What it is |
+|---|---|
+| `reaction_demo` | reaction + hook → hard cut → your demo (the default for app ads) |
+| `no_yapping` | silent split-screen tutorial |
+| `greenscreen_reaction` | the creator cut out over a screenshot, post, or clip |
+
+Anything the template flags don't cover (caption style, exact position, a second caption, a pop-in)
+the agent edits directly in the generated HyperFrames HTML.
+
+## What to expect
 
 Measured end to end on an Apple M1 Max (Node 26, ffmpeg 7.1, `hyperframes@0.7.76`, headless Chrome
 already cached), with 1080×1920 source clips and a 2160×2880 screen recording:
@@ -154,52 +153,43 @@ reel cost one render each.
 
 ## What it costs
 
-ReelClaw needs a Growth or Scale plan. On top of it, you pay as you go from your DansUGC credit balance:
+The DansUGC MCP needs a Growth or Scale plan. On top of it, you pay as you go from your DansUGC
+credit balance:
 
-- **UGC clips you buy.** Library b-roll clips are 11 credits each (images 8), less with your
-  plan's discount (no volume discounts; always current rates). In ReelClaw you only pay for
-  creator reactions you don't already own; reactions you own are reused for free.
-- **Editing and rendering: included.** Reaction matching, hooks, overlays, music, and rendering cost
-  nothing, whether hosted (volume) or on your machine (studio).
-- **Research queries** (TikTok/Instagram search and other ScrapeCreators lookups your agent runs
-  through the MCP): 0.02 credits per query, charged only when the query succeeds. ReelClaw's own research
-  (reaction matching, hooks) is included.
+- **Editing and rendering: free.** They run on your machine.
+- **UGC clips you buy.** Library clips are 11 credits each (images 8), less your plan's discount
+  (no volume discounts; always current rates). Clips you already own are reused for free.
+- **Research queries** (TikTok/Instagram search, trending music): 0.02 credits per query, charged
+  only when the query succeeds. Viral-format suggestions and library search are free.
 - Prices, quotes, and balances are in DansUGC credits; the agent talks in credits and only
   converts to dollars if you ask.
-- The agent always shows the exact price first and waits for an explicit yes: the render quote in
-  volume mode, the clip-purchase quote in studio mode (`purchase_videos` is two-step: a free quote,
-  then the buy). Team members can charge a team's credits instead of their own; the agent always
-  names which account pays. Top up at https://dansugc.com/dashboard/credits.
+- The agent always shows the exact clip price first and waits for an explicit yes
+  (`purchase_videos` is two-step: a free quote, then the buy). Team members can charge a team's
+  credits instead of their own; the agent always names which account pays. Top up at
+  https://dansugc.com/dashboard/credits.
 
 ## Privacy
 
-- DansUGC never receives your code. The agent sends DansUGC only the product brief it wrote (you
-  see it first) and the demo videos you approve.
-- Demo videos are uploaded straight to DansUGC private storage through short-lived signed links
-  (1 hour) and used to render your batch. Download links for finished videos are signed and expire
-  after 24 hours.
-- Batches belong to your DansUGC account (or the team project you choose) and show up in your
-  dashboard.
-- Studio mode sends DansUGC nothing but the searches and purchases: your demo, the templates, the
-  renders, and the QA frames stay on your machine (`./reelclaw-studio/`, `./reelclaw-output/`).
+- DansUGC never receives your code, your demo, or your renders. The agent sends DansUGC only search
+  queries, the short product description used for format suggestions, and the purchases you
+  approve. Everything else stays on your machine (`./reelclaw-studio/`, `./reelclaw-output/`).
+- Publishing through DansUGC Posting uploads only the video you choose to post.
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| Agent says no `reelclaw_*` tools | The MCP server isn't connected. Claude Code: `/mcp` → authenticate `plugin:reelclaw:dansugc`. Codex: `codex mcp list`, then `codex mcp login dansugc`. |
+| Agent says no `dansugc` tools | The MCP server isn't connected. Claude Code: `/mcp` → authenticate `plugin:reelclaw:dansugc`. Codex: `codex mcp list`, then `codex mcp login dansugc`. |
+| Agent tries `reelclaw_create_batch` / `reelclaw_render` and gets "tool not found" | An old (1.x) plugin or skill is installed. Those hosted tools were removed in 2.0. Reinstall (see the quickstart) and delete any old `reelclaw-ads` skill folder. |
 | "Needs authentication" / 401 | Log in again (same commands). |
-| `reelclaw_login_required`, or "no longer accepts API keys — reconnect with OAuth" | The server was added with an API key. MCP is OAuth-only now. Claude Code: `claude mcp remove dansugc`, re-add it without `--header` (or use the plugin), then `/mcp` → Authenticate. Codex: delete `bearer_token_env_var` from `[mcp_servers.dansugc]` in `~/.codex/config.toml`, then `codex mcp login dansugc`. |
+| `reelclaw_plan_required` | The account (or its team owner) needs a Growth or Scale plan: https://dansugc.com/dashboard/credits |
+| `reelclaw_login_required`, or "no longer accepts API keys — reconnect with OAuth" | The server was added with an API key. MCP is OAuth-only. Claude Code: `claude mcp remove dansugc`, re-add it without `--header` (or use the plugin), then `/mcp` → Authenticate. Codex: delete `bearer_token_env_var` from `[mcp_servers.dansugc]` in `~/.codex/config.toml`, then `codex mcp login dansugc`. |
 | `insufficient_credits` | Top up at https://dansugc.com/dashboard/credits, then ask the agent to re-quote. |
-| Upload fails with `invalid_upload` | The file changed or the size/type didn't match. Ask the agent to add the demo again (it re-measures with `wc -c`). |
-| Upload/download link `invalid_signature` | Link expired (uploads 1 h, downloads 24 h). The agent fetches a fresh one. |
-| Demo over 50 MB | Trim to the 10–30 s that shows the aha moment, or re-export at a lower bitrate. |
-| Codex: tool call timed out during research | The plugin sets `tool_timeout_sec = 120`; for a hand-added server put `tool_timeout_sec = 120` under `[mcp_servers.dansugc]` in `~/.codex/config.toml` (see [`codex/config.toml`](codex/config.toml)). Re-running `reelclaw_advance_batch` resumes where it stopped. |
-| Codex doesn't see the skill | Start a new session. Check `~/.agents/skills/reelclaw-ads/SKILL.md` exists (Option B) or `codex plugin list` shows `reelclaw@dansugc` (Option A). |
-| Studio: `HyperFrames requires Node.js >= 22` | Install Node 22+ (`brew install node` or `nvm install 22`). The template installer's "Node 18+" check is stale. |
-| Studio: render "succeeded" but animations / music fade / font are wrong | The agent's wrapper prints **RENDER WARNINGS** for these silent failures (GSAP or font didn't load, sparse keyframes). It vendors GSAP locally so a CDN hiccup can't drop animations. |
-| Studio: first render is slow | One-time HyperFrames + headless Chrome download via npx. |
-| Something else | The batch is always visible at the `dashboard_url` the agent prints. Support: https://dansugc.com |
+| Codex doesn't see the skill | Start a new session. Check `~/.agents/skills/reelclaw/SKILL.md` exists (Option B) or `codex plugin list` shows `reelclaw@dansugc` (Option A). |
+| `HyperFrames requires Node.js >= 22` | Install Node 22+ (`brew install node` or `nvm install 22`). The template installer's "Node 18+" check is stale. |
+| Render "succeeded" but animations / music fade / font are wrong | The agent's wrapper prints **RENDER WARNINGS** for these silent failures (GSAP or font didn't load, sparse keyframes). It vendors GSAP locally so a CDN hiccup can't drop animations. |
+| First render is slow | One-time HyperFrames + headless Chrome download via npx. |
+| Something else | Support: https://dansugc.com |
 
 ## What's in this repo
 
@@ -210,35 +200,30 @@ plugins/reelclaw/
   .claude-plugin/plugin.json           Claude Code plugin manifest
   .codex-plugin/plugin.json            Codex plugin manifest
   .mcp.json                            dansugc → https://dansugc.com/mcp (HTTP, OAuth, 120 s tool timeout)
-  skills/reelclaw-ads/                 the workflow skill (single source for both clients)
-    SKILL.md                           router: shared steps, volume mode, studio mode
+  skills/reelclaw/                     THE ReelClaw skill (single source for every agent)
+    SKILL.md                           connect + costs, plan, many variations, edit/render/QA, deliver
     references/
       product-brief.md                 reading the product from the repo, truthfully
       research.md                      paid viral research (0.02 credits/query) and winner thresholds
       hooks.md                         hook rules, formats, per-template voice, captions
       footage.md                       DansUGC reactions: search, compare, two-step buy, trims; demo prep
-      volume-mode.md                   hosted reelclaw_* flow: create → quote → yes → render → download
-      studio-templates.md              the 3 HyperFrames templates' real inputs, wrapper, troubleshooting
+      music.md                         trending sounds for the niche + licensing (organic vs ads)
+      templates.md                     the 3 HyperFrames templates' real inputs, wrapper, troubleshooting
       qa-checklist.md                  what to look for in the QA frames + render-warning fixes
       hyperframes-editing.md           editing the generated composition (tested recipes)
       publishing.md                    DansUGC Posting: presign → PUT → create_post
-      errors.md, tools.md              MCP error playbook, tool map (incl. accounts/teams)
+      errors.md, tools.md              MCP error playbook (incl. removed tools), tool map (incl. accounts/teams)
     scripts/
       run-generator.mjs                safe params-JSON wrapper: stage media, generate, vendor GSAP,
                                        render with the pinned HyperFrames, scan the log, run QA
       qa-frames.sh                     QA frames, safe-band overlay, contact sheet, measurements
     agents/openai.yaml                 Codex UI metadata + MCP dependency
-  commands/{new,studio,status}.md      Claude Code slash commands (/reelclaw:new, /reelclaw:studio, /reelclaw:status)
+  commands/new.md                      Claude Code slash command /reelclaw:new
 codex/
   install.sh                           skill + MCP installer for Codex (curl | sh)
   config.toml                          manual ~/.codex/config.toml block
   AGENTS.md                            snippet for your project's AGENTS.md
-SKILL.md, references/, assets/         the original DIY ReelClaw skill (local ffmpeg pipeline)
 ```
-
-The root `SKILL.md` is the older do-it-yourself ReelClaw skill that assembles reels locally with
-ffmpeg and your own keys. It's unchanged and still works (its guide is in [README-diy.md](README-diy.md));
-the plugin above is the hosted version and needs none of that.
 
 Maintainers: bump `version` in both `plugins/reelclaw/.claude-plugin/plugin.json` and
 `plugins/reelclaw/.codex-plugin/plugin.json` to ship an update (a set version pins users until it
@@ -266,7 +251,7 @@ Local checks run: `claude plugin validate --strict` (marketplace + plugin: passe
 `claude plugin marketplace add` + `claude plugin install reelclaw@dansugc` (installed; server shows
 as `plugin:reelclaw:dansugc`, "Needs authentication"); isolated `codex plugin marketplace add` +
 `codex plugin add reelclaw@dansugc` (installed; `codex mcp list` shows `dansugc`, "Not logged in");
-`install.sh` run twice under `dash` and `sh` (idempotent). Studio mode (1.1.0): real renders of
+`install.sh` run twice under `dash` and `sh` (idempotent). Local editing (1.1.0, then called studio mode): real renders of
 `reaction_demo` (3 QA passes incl. a composition edit) and `no_yapping` (2 passes) following the
 skill literally, a forced GSAP-CDN failure and a forced font fallback to confirm the render-warning
 scan, and flag-injection refusal in the wrapper.

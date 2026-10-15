@@ -6,7 +6,7 @@
 
 [mcp_servers.dansugc]
 url = "https://dansugc.com/mcp"
-# ReelClaw research calls can run ~45 s; give tools headroom over the 60 s default.
+# Research calls (viral formats, trending music) can take a while; give tools headroom over the 60 s default.
 tool_timeout_sec = 120
 startup_timeout_sec = 20
 
