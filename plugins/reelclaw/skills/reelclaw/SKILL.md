@@ -4,7 +4,7 @@ description: Make short-form UGC video ads (TikTok, Reels, Shorts) for the produ
 license: MIT
 metadata:
   author: DansUGC
-  version: "2.0.0"
+  version: "2.1.0"
 ---
 
 # DansUGC ReelClaw: UGC ads from your repo, edited locally
@@ -39,9 +39,9 @@ skill loads; a Codex script install puts it at `~/.agents/skills/reelclaw`).
   - Auth is OAuth only (browser login with the DansUGC account). Never ask for or suggest an API
     key. If a tool says it "no longer accepts API keys — reconnect with OAuth", see
     [references/errors.md](references/errors.md).
-- Cost (say it when asked, and before anything is spent): the MCP needs a Growth or Scale plan
-  (team members use their team owner's plan); if a tool returns `reelclaw_plan_required`, relay the
-  message and the upgrade link and stop. **Editing and rendering are local and free.** Users pay
+- Cost (say it when asked, and before anything is spent): the MCP works on any DansUGC account, no
+  plan needed (a plan only adds bonus credits and clip discounts). **Editing and rendering are local
+  and free.** Users pay
   only for (a) reaction clips they don't already own (library clips are 11 credits each, images 8,
   less the plan's discount; owned clips are never charged again) and (b) research queries through
   the MCP (TikTok/Instagram search, `reelclaw_trending_music`: 0.02 credits per query, only on

@@ -1,15 +1,14 @@
-# DansUGC MCP tool reference (library + viral formats + music + research + posting)
+# DansUGC MCP tool reference (library + packages + viral formats + music + research + posting)
 
 Server: `dansugc` at `https://dansugc.com/mcp` (streamable HTTP). Auth: OAuth only — the user logs
-in with their DansUGC account in the browser; the account needs a Growth or Scale plan (else every
-tool returns `reelclaw_plan_required`). DansUGC API keys (`dsk_…`) are for the REST API and are
+in with their DansUGC account in the browser; any account works, no plan needed. DansUGC API keys (`dsk_…`) are for the REST API and are
 rejected on MCP (`reelclaw_login_required` / "reconnect with OAuth").
 
 **The MCP server does not edit or render videos.** It has no batch, quote or render tools. You edit
 and render locally with the ReelClaw templates (SKILL.md section 4); the server supplies clips,
 viral formats, trending music, research and posting.
 
-Cost: a Growth or Scale plan, then pay-as-you-go from DansUGC credits. Editing and rendering are
+Cost: no plan needed, pay-as-you-go from DansUGC credits. Editing and rendering are
 local and free. Only reactions the account doesn't already own are charged (library clips are 11
 credits each, images 8, less the plan's discount). `reelclaw_suggest_formats` and `search_videos`
 are free; research queries (TikTok/Instagram search, `reelclaw_trending_music`) cost 0.02 credits
@@ -42,6 +41,10 @@ accounts on your own; name the team and amount before its first spend in a conve
 | `get_video` | `video_id`, `project_id?` | one clip's details, price in credits, preview; download link if owned |
 | `purchase_videos` | `video_ids` (1-50), `project_id?`, `expected_total_cents?` (hundredths of a credit) or `expected_total_credits?` | **Two-step.** Without `expected_total_cents`: a quote (exact total in credits, how it was built, account charged), nothing charged. With it (after the user's yes): charges and returns a signed `download_url` per clip (~1 h); owned clips come back under "Already Purchased", free. Team-bought clips belong to the team. |
 | `list_purchases` | filters, `project_id?` | clips the account owns, with fresh download links |
+| `search_packages` | `query?`, `creator?`, `features?`, `owned_only?`, `sort?`, `page?`, `limit?`, `project_id?` | packages: curated collections of library clips priced below buying each clip. Each result: list price in credits, estimated price with the account's discount, clip count and one-by-one value, creators, owned / available / plan-locked. Free. Prefer a package when the user wants many clips of one kind. |
+| `get_package` | `package_id` or `slug`, `include_clips?`, `project_id?` | package details + its clips (watermarked previews); when owned, a signed download URL per clip (~1 h) or the package's download page |
+| `purchase_packages` | `package_ids` (1-20), `project_id?`, `expected_total_cents?` or `expected_total_credits?` | **Two-step**, like `purchase_videos`: first call quotes (nothing charged), second buys after the user's yes. Owned packages are free; subscriber-exclusive packages need that plan. Returns each package's delivery page; then `get_package` for per-clip downloads. |
+| `list_owned_packages` | `project_id?` | packages the account owns, with purchase date, credits paid and download links |
 | `tiktok_search_videos` / `tiktok_user_videos` / `tiktok_search_users` / `instagram_search_reels` / `instagram_user_reels` / `scrapecreators_raw` | query / handle / path, `project_id?` | research data; **0.02 credits per successful query** from the selected account (research.md) |
 | `check_posting_subscription` | none | posting plan status (posting needs a plan; nothing else does) |
 | `list_posting_accounts` | none | connected TikTok/Instagram accounts (UUIDs) |
@@ -51,7 +54,7 @@ accounts on your own; name the team and amount before its first spend in a conve
 
 ## Pricing model (what to tell users)
 
-- Needs a Growth or Scale plan; usage on top is pay-as-you-go from DansUGC credits.
+- No plan needed; usage is pay-as-you-go from DansUGC credits (a plan adds bonus credits and discounts).
 - Editing, rendering, hook writing and QA happen on the user's machine and are **free**.
 - Research queries through the MCP (TikTok/Instagram search, `reelclaw_trending_music`) cost
   **0.02 credits per ScrapeCreators query**, charged only on success. A trending-music lookup is
@@ -59,7 +62,7 @@ accounts on your own; name the team and amount before its first spend in a conve
 - Library clips list at **11 credits each** (images 8), less the account's plan discount (Growth
   10–15%, Scale 15–20%) or a live sale, whichever is larger. There are no volume discounts, and the
   MCP always charges current rates. Owned clips are free to reuse forever.
-- The exact cost is whatever the `purchase_videos` quote step returns — never estimate. Credits are
+- The exact cost is whatever the `purchase_videos` / `purchase_packages` quote step returns — never estimate. Credits are
   topped up at https://dansugc.com/dashboard/credits.
 
 ## Download recipe (bought clips)

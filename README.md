@@ -17,8 +17,8 @@ before handing you the file. You can ask for any edit in plain words: "move the 
 > (root `SKILL.md`, `README-diy.md`, `references/`, `assets/`) is retired too: there is only one
 > ReelClaw skill now, `reelclaw`. If you installed `reelclaw-ads` before, reinstall (below).
 
-No Gemini key, no API keys: you log in once with your DansUGC account (OAuth). Needs a Growth or
-Scale plan; on top of it you pay per clip from your credits. Editing and rendering are local and
+No Gemini key, no API keys: you log in once with your DansUGC account (OAuth). Any DansUGC
+account works, no plan needed; you pay per clip from your credits. Editing and rendering are local and
 free. Needs Node 22+ and ffmpeg.
 
 > Every reaction is a real human creator. Never AI.
@@ -96,8 +96,7 @@ Optional: paste [`codex/AGENTS.md`](codex/AGENTS.md) into your project's `AGENTS
 ### Signing in
 
 The DansUGC MCP server uses **OAuth only**: you log in with your DansUGC account in the browser once
-and your agent stays connected. Your account needs a Growth or Scale plan (team members use their
-team owner's plan). DansUGC API keys (`dsk_…`) don't work on MCP; they're for the REST API
+and your agent stays connected. Any DansUGC account can connect, with or without a plan. DansUGC API keys (`dsk_…`) don't work on MCP; they're for the REST API
 (`/api/v1`) only. If you added the server earlier with an `Authorization` header or
 `bearer_token_env_var`, remove it and log in with OAuth (see Troubleshooting).
 
@@ -153,7 +152,7 @@ reel cost one render each.
 
 ## What it costs
 
-The DansUGC MCP needs a Growth or Scale plan. On top of it, you pay as you go from your DansUGC
+The DansUGC MCP works on any DansUGC account, no plan needed. You pay as you go from your DansUGC
 credit balance:
 
 - **Editing and rendering: free.** They run on your machine.
@@ -182,7 +181,6 @@ credit balance:
 | Agent says no `dansugc` tools | The MCP server isn't connected. Claude Code: `/mcp` → authenticate `plugin:reelclaw:dansugc`. Codex: `codex mcp list`, then `codex mcp login dansugc`. |
 | Agent tries `reelclaw_create_batch` / `reelclaw_render` and gets "tool not found" | An old (1.x) plugin or skill is installed. Those hosted tools were removed in 2.0. Reinstall (see the quickstart) and delete any old `reelclaw-ads` skill folder. |
 | "Needs authentication" / 401 | Log in again (same commands). |
-| `reelclaw_plan_required` | The account (or its team owner) needs a Growth or Scale plan: https://dansugc.com/dashboard/credits |
 | `reelclaw_login_required`, or "no longer accepts API keys — reconnect with OAuth" | The server was added with an API key. MCP is OAuth-only. Claude Code: `claude mcp remove dansugc`, re-add it without `--header` (or use the plugin), then `/mcp` → Authenticate. Codex: delete `bearer_token_env_var` from `[mcp_servers.dansugc]` in `~/.codex/config.toml`, then `codex mcp login dansugc`. |
 | `insufficient_credits` | Top up at https://dansugc.com/dashboard/credits, then ask the agent to re-quote. |
 | Codex doesn't see the skill | Start a new session. Check `~/.agents/skills/reelclaw/SKILL.md` exists (Option B) or `codex plugin list` shows `reelclaw@dansugc` (Option A). |

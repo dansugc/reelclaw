@@ -1,6 +1,6 @@
 {
   "name": "reelclaw",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Make TikTok/Reels UGC ads for the product in your repo with real human reaction hooks from DansUGC, edited and rendered locally with the ReelClaw HyperFrames templates.",
   "author": {
     "name": "DansUGC",
@@ -26,7 +26,7 @@
   "interface": {
     "displayName": "DansUGC ReelClaw",
     "shortDescription": "UGC reaction + demo ads for the product in your repo.",
-    "longDescription": "Reads your repo to understand the product, finds your demo video, and makes UGC ads with real human creator reactions from the DansUGC library. Your agent edits every reel on this machine with the ReelClaw HyperFrames templates (TikTok Sans, safe-zone captions), checks each render frame by frame, and can make custom edits on request. The dansugc MCP server supplies the clips, viral-format suggestions and trending music; it does not render. Log in with your DansUGC account (OAuth); no API key. Needs a Growth or Scale plan; editing and rendering are free and local; you pay only for clips you don't already own and research queries, and nothing is bought without your explicit yes on the price.",
+    "longDescription": "Reads your repo to understand the product, finds your demo video, and makes UGC ads with real human creator reactions from the DansUGC library. Your agent edits every reel on this machine with the ReelClaw HyperFrames templates (TikTok Sans, safe-zone captions), checks each render frame by frame, and can make custom edits on request. The dansugc MCP server supplies the clips, viral-format suggestions and trending music; it does not render. Log in with your DansUGC account (OAuth); no API key. Works on any DansUGC account, no plan needed; editing and rendering are free and local; you pay only for clips you don't already own and research queries, and nothing is bought without your explicit yes on the price.",
     "developerName": "DansUGC",
     "category": "Productivity",
     "capabilities": [

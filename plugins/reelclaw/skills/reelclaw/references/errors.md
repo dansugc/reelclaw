@@ -15,7 +15,6 @@ follow `next_action` when present — they say exactly what to do. Never loop bl
 
 | Code | Meaning | Recovery |
 |---|---|---|
-| `reelclaw_plan_required` | The account (or its team owner) has no Growth or Scale plan. | Relay the message and the upgrade link (https://dansugc.com/dashboard/credits) and stop. Don't retry. |
 | `insufficient_credits` (402) | Not enough credits for a clip purchase or a research query. Nothing was charged. | Send the user to https://dansugc.com/dashboard/credits, or check for a team account (below). To lower cost: use clips the account already owns (`list_purchases`), fewer new clips, or skip research. |
 | `music_search_unavailable` / `rate_limited` (`reelclaw_trending_music`) | TikTok music search failed or is busy. Nothing was charged. | Retry once after `retry_after_seconds` (or ~30 s). Still failing: ask the user for a sound link, or render without music (no `music` param). |
 | `account_unavailable` | The `project_id` isn't a team the user can use (research tools like `reelclaw_trending_music`, or `reelclaw_suggest_formats`). Nothing was charged. | `list_accounts`, or omit `project_id` for the Personal Account. |
