@@ -27,7 +27,7 @@ Rules:
   says it no longer accepts API keys or asks to reconnect with OAuth, tell me to remove any
   `bearer_token_env_var` from `[mcp_servers.dansugc]` and run `codex mcp login dansugc`. Never ask
   me for an API key.
-- It needs a Growth or Scale plan; on top of that it's pay-as-you-go from DansUGC credits. Editing
+- It works on any DansUGC account (no plan needed) and is pay-as-you-go from DansUGC credits. Editing
   and rendering are local and free; only clips I don't already own cost credits (11 credits each,
   less my plan's discount) and research queries (TikTok/Instagram search, trending music) cost 0.02
   credits each, only on success.

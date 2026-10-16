@@ -123,7 +123,7 @@ Done. Next steps:
   3. In your project, ask (needs Node 22+ and ffmpeg; reels are edited and rendered locally):
        \$reelclaw Make 3 UGC ads for this app. Use the demo in ./demo.mp4.
 
-Needs a Growth or Scale plan; on top of it you pay as you go from DansUGC credits. Editing and
+Works on any DansUGC account, no plan needed; you pay as you go from DansUGC credits. Editing and
 rendering happen on your machine and are free; you pay only for reactions you don't already own
 (library clips are 11 credits each, less your plan's discount) and research queries your agent
 runs (0.02 credits each, only on success). Nothing is bought until you approve the quoted price.

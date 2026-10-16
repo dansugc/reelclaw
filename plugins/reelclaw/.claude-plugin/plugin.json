@@ -1,8 +1,8 @@
 {
   "name": "reelclaw",
   "displayName": "DansUGC ReelClaw",
-  "version": "2.0.0",
-  "description": "Make TikTok/Reels UGC ads for the product in your repo with real human reaction hooks from DansUGC. Your agent edits and renders every reel locally with the ReelClaw HyperFrames templates and checks each render frame by frame. The dansugc MCP server supplies clips, viral-format research and trending music; it does not render. No API keys: log in with your DansUGC account (OAuth). Needs a Growth or Scale plan; editing and rendering are free and local, you pay only for clips you don't own yet and research queries.",
+  "version": "2.1.0",
+  "description": "Make TikTok/Reels UGC ads for the product in your repo with real human reaction hooks from DansUGC. Your agent edits and renders every reel locally with the ReelClaw HyperFrames templates and checks each render frame by frame. The dansugc MCP server supplies clips, viral-format research and trending music; it does not render. No API keys: log in with your DansUGC account (OAuth). Works on any DansUGC account, no plan needed; editing and rendering are free and local, you pay only for clips you don't own yet and research queries.",
   "author": {
     "name": "DansUGC",
     "email": "dan@dansugcmodels.com",
