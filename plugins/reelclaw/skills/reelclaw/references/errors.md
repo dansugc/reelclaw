@@ -32,7 +32,7 @@ The DansUGC MCP no longer renders or edits videos. These tools were removed in R
 `reelclaw_get_overlay`.
 
 - A "tool not found" / "unknown tool" error for one of them means an old plugin or skill is
-  installed. Don't retry: make the reels locally (SKILL.md section 4) and tell the user to update.
+  installed. Don't retry: make the reels locally (SKILL.md sections 1-3) and tell the user to update.
   - Claude Code (terminal): `claude plugin marketplace update dansugc` then
     `claude plugin update reelclaw@dansugc`, then restart the session. If it still loads the old
     skill: `claude plugin uninstall reelclaw@dansugc` + `claude plugin install reelclaw@dansugc`.
@@ -56,4 +56,24 @@ The DansUGC MCP no longer renders or edits videos. These tools were removed in R
 - **Expired clip `download_url`** (~1 h): `list_purchases` / `get_video` (same `project_id`) give a
   fresh link; owned clips are never charged again.
 - **Research query failed**: failed queries aren't charged; retry once, then move on without it.
-- Local problems (Node, npx, Chrome, generator, render, QA): templates.md → Troubleshooting.
+
+## Local rendering
+
+Editing and rendering run on this machine with the reelclaw engine in `reelclaw-studio/`; nothing
+here touches DansUGC or credits. Run these inside `reelclaw-studio/`:
+
+- `npx reelclaw doctor`: Node 22+, ffmpeg/ffprobe, yt-dlp (optional), HyperFrames, headless Chrome,
+  project assets. It prints the install line for anything missing; show it to the user and wait.
+- `npx reelclaw qa <name>`: canvas, duration, audio (or SILENT), black/frozen frames, music tail
+  fade and the renderer's silent failures; writes `renders/qa/<name>/report.txt` and the frames to
+  look at. Exit 1 = a problem to fix before delivering.
+- `renders/<name>.render.log`: the full HyperFrames log of the last render (the renderer can exit 0
+  while a font, GSAP or a video failed to load; `qa` surfaces those as render warnings).
+- `npx reelclaw make <template> --help`: every input of a template, with defaults.
+
+| Symptom | Fix |
+|---|---|
+| `npm error 404 Not Found - GET https://registry.npmjs.org/reelclaw` | `npx reelclaw` ran outside `reelclaw-studio/` (or before `add`), so npx looked on npm. `cd reelclaw-studio`; to install, use the installer from SKILL.md section 1. |
+| `template "<id>" is not installed here` (its hint says `npx reelclaw@latest add`), or any `npx reelclaw@latest add` fails | From the repo root: `<installer> add <id> --dir reelclaw-studio`, with the installer from SKILL.md section 1 (the npm package may not be published yet). |
+| First render is slow | One-time HyperFrames + headless Chrome download. |
+| A hand edit to `reels/<name>.html` vanished | `make` with the same `--name` overwrites it. Edit, `npx reelclaw check <name>`, `npx reelclaw render <name>`. |

@@ -5,8 +5,11 @@ in with their DansUGC account in the browser; any account works, no plan needed.
 rejected on MCP (`reelclaw_login_required` / "reconnect with OAuth").
 
 **The MCP server does not edit or render videos.** It has no batch, quote or render tools. You edit
-and render locally with the ReelClaw templates (SKILL.md section 4); the server supplies clips,
-viral formats, trending music, research and posting.
+and render locally with the reelclaw engine in `reelclaw-studio/` (SKILL.md sections 1-3); the
+server supplies clips, viral formats, trending music, research and posting. How to use these tools
+inside the workflow (search → quote → yes → buy, music licensing, research consent): the playbook's
+`references/dansugc.md` in `reelclaw-studio/.claude/skills/reelclaw-playbook/` (Codex:
+`.agents/skills/reelclaw-playbook/`).
 
 Cost: no plan needed, pay-as-you-go from DansUGC credits. Editing and rendering are
 local and free. Only reactions the account doesn't already own are charged (library clips are 11
@@ -24,8 +27,8 @@ Errors: `isError: true` with `{ code, message, retryable, field?, retry_after_se
 
 | Tool | Input | Returns / notes |
 |---|---|---|
-| `reelclaw_suggest_formats` | `brief` (10–24000 chars, describe the product; URLs aren't scraped here), `direction?`, `niche?` (≤10 niche slugs or labels, e.g. `"edtech"`, `"Education & Study"`; skips niche detection; unknown values return the valid slugs), `project_id?` | `{ niche_source: "clef"\|"embedding"\|"explicit", niches: [{ slug, label, score, status }], formats: [{ slug, label, description, reason, score, clip_supply, niches, concepts: [{ id, title, display_name, views, outlier_multiplier, tiktok_url, thumbnail_url, clip_count }], requests: [{ id, title, concept_id, clip_count }] }], suggested_pick: { format_slugs, niche_slugs, concept_ids } \| null }`. Proven viral formats for the product, ranked by fit, virality and DansUGC clip supply. **Call first when the user is unsure what reels they want**; present 2–4 with evidence, then make the reels locally: copy the format's structure from the picked concepts (watch `tiktok_url`), choose the template and hooks, and find clips with `search_videos`. `suggested_pick` is ReelClaw's top pick. Free. Read-only. |
-| `reelclaw_trending_music` | `category` (niche, e.g. "fitness app"), `country?` (default `US`), `period?` `1\|7\|30\|90\|180` days (default 7), `limit?` 1-20 (default 10), `commercial_only?`, `project_id?` | `songs: [{ rank, title, artist, duration_seconds, uses, trend: "rising"\|"popular"\|"steady", category_videos, category_video_plays, label_track, commercial_music_flag, cover_url, preview_url, music_link, example_video_url }]`, `music_links` (top 5 TikTok sound pages, for showing the user), `license_note`, `queries`, `credits_charged`, `cached`. **0.02 credits per ScrapeCreators query, 1-2 per call; cached 6 h per category + country + period (then 0 credits).** Download a song's `preview_url` and pass the file as the template's `music`. [music.md](music.md) |
+| `reelclaw_suggest_formats` | `brief` (10–24000 chars, describe the product; URLs aren't scraped here), `direction?`, `niche?` (≤10 niche slugs or labels, e.g. `"edtech"`, `"Education & Study"`; skips niche detection; unknown values return the valid slugs), `project_id?` | `{ niche_source: "clef"\|"embedding"\|"explicit", niches: [{ slug, label, score, status }], formats: [{ slug, label, description, reason, score, clip_supply, niches, concepts: [{ id, title, display_name, views, outlier_multiplier, tiktok_url, thumbnail_url, clip_count }], requests: [{ id, title, concept_id, clip_count }] }], suggested_pick: { format_slugs, niche_slugs, concept_ids } \| null }`. Proven viral formats for the product, ranked by fit, virality and DansUGC clip supply. **Call first when the user is unsure what reels they want**; present 2–4 with evidence, then make the reels locally: copy the format's structure from the picked concepts (watch `tiktok_url`), map it to a reelclaw template (SKILL.md table), write hooks in that structure, and find clips with `search_videos`. `suggested_pick` is ReelClaw's top pick. Free. Read-only. |
+| `reelclaw_trending_music` | `category` (niche, e.g. "fitness app"), `country?` (default `US`), `period?` `1\|7\|30\|90\|180` days (default 7), `limit?` 1-20 (default 10), `commercial_only?`, `project_id?` | `songs: [{ rank, title, artist, duration_seconds, uses, trend: "rising"\|"popular"\|"steady", category_videos, category_video_plays, label_track, commercial_music_flag, cover_url, preview_url, music_link, example_video_url }]`, `music_links` (top 5 TikTok sound pages, for showing the user), `license_note`, `queries`, `credits_charged`, `cached`. **0.02 credits per ScrapeCreators query, 1-2 per call; cached 6 h per category + country + period (then 0 credits).** `trend` is an estimate (`rising` = sound ≤ 60 days old with ≥ 1,000 uses, `popular` = ≥ 50,000 uses, `steady` = the rest; sounds under 100 uses are dropped), so never claim "#1 on TikTok". Download a song's `preview_url` (AAC `.m4a`, no file extension in the URL, signed and expiring) and pass the file as `--music`; `music_link` is a TikTok sound page for showing the user, not a template input. `commercial_only` is a hint, not a license: always relay `license_note`. |
 
 ## Accounts, library, research, posting
 
@@ -45,11 +48,11 @@ accounts on your own; name the team and amount before its first spend in a conve
 | `get_package` | `package_id` or `slug`, `include_clips?`, `project_id?` | package details + its clips (watermarked previews); when owned, a signed download URL per clip (~1 h) or the package's download page |
 | `purchase_packages` | `package_ids` (1-20), `project_id?`, `expected_total_cents?` or `expected_total_credits?` | **Two-step**, like `purchase_videos`: first call quotes (nothing charged), second buys after the user's yes. Owned packages are free; subscriber-exclusive packages need that plan. Returns each package's delivery page; then `get_package` for per-clip downloads. |
 | `list_owned_packages` | `project_id?` | packages the account owns, with purchase date, credits paid and download links |
-| `tiktok_search_videos` / `tiktok_user_videos` / `tiktok_search_users` / `instagram_search_reels` / `instagram_user_reels` / `scrapecreators_raw` | query / handle / path, `project_id?` | research data; **0.02 credits per successful query** from the selected account (research.md) |
+| `tiktok_search_videos` / `tiktok_user_videos` / `tiktok_search_users` / `instagram_search_reels` / `instagram_user_reels` / `scrapecreators_raw` | query / handle / path, `project_id?` | research data; **0.02 credits per successful query** from the selected account; say the plan and cap first (playbook `references/dansugc.md` → Research) |
 | `check_posting_subscription` | none | posting plan status (posting needs a plan; nothing else does) |
 | `list_posting_accounts` | none | connected TikTok/Instagram accounts (UUIDs) |
 | `get_media_upload_url` | `content_type`, `size_bytes` | single-use PUT URL (5 min) + `public_url` |
-| `create_post` | `account_ids`, `caption`, `media_urls` (from `get_media_upload_url`), `scheduled_for?`/`publish_now?`, `timezone?`, `platform_settings?` | schedules/publishes (publishing.md) |
+| `create_post` | `account_ids`, `caption`, `media_urls` (from `get_media_upload_url`), `scheduled_for?`/`publish_now?`, `timezone?`, `platform_settings?` | schedules/publishes ([publishing.md](publishing.md)) |
 | `list_posts` | filters | post status |
 
 ## Pricing model (what to tell users)

@@ -1,6 +1,6 @@
 interface:
   display_name: "DansUGC ReelClaw"
-  short_description: "UGC reaction + demo ads for this repo, edited and rendered locally with HyperFrames"
+  short_description: "UGC ads for this repo with DansUGC clips or your footage, rendered locally with the reelclaw engine"
   brand_color: "#111111"
   default_prompt: "$reelclaw: Make 3 UGC ads for this project."
 

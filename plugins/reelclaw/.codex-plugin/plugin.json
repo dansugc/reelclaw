@@ -1,7 +1,7 @@
 {
   "name": "reelclaw",
-  "version": "2.1.0",
-  "description": "Make TikTok/Reels UGC ads for the product in your repo with real human reaction hooks from DansUGC, edited and rendered locally with the ReelClaw HyperFrames templates.",
+  "version": "3.0.0",
+  "description": "Make TikTok/Reels UGC ads for the product in your repo with real human reaction hooks from DansUGC or your own footage, edited and rendered locally with the reelclaw engine (7 templates + the reelclaw-playbook skill).",
   "author": {
     "name": "DansUGC",
     "email": "dan@dansugcmodels.com",
@@ -25,8 +25,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "DansUGC ReelClaw",
-    "shortDescription": "UGC reaction + demo ads for the product in your repo.",
-    "longDescription": "Reads your repo to understand the product, finds your demo video, and makes UGC ads with real human creator reactions from the DansUGC library. Your agent edits every reel on this machine with the ReelClaw HyperFrames templates (TikTok Sans, safe-zone captions), checks each render frame by frame, and can make custom edits on request. The dansugc MCP server supplies the clips, viral-format suggestions and trending music; it does not render. Log in with your DansUGC account (OAuth); no API key. Works on any DansUGC account, no plan needed; editing and rendering are free and local; you pay only for clips you don't already own and research queries, and nothing is bought without your explicit yes on the price.",
+    "shortDescription": "UGC ads for the product in your repo: 7 viral templates, rendered locally.",
+    "longDescription": "Reads your repo to understand the product, finds your demo video, and makes short-form ads with real human creator reactions from the DansUGC library or your own footage. Your agent sets up one local reel project with the open-source reelclaw engine: 7 viral templates (reaction + demo, wall of text, listicle, no yapping, greenscreen reaction, talking-head captions, before/after) and the reelclaw-playbook skill for hooks, footage, music, frame-by-frame QA and variants. The dansugc MCP server supplies the clips, viral-format suggestions, trending music, research and posting; it does not render. Log in with your DansUGC account (OAuth); no API key. Works on any DansUGC account, no plan needed; editing and rendering are free and local; you pay only for clips you don't already own and research queries, and nothing is bought without your explicit yes on the price.",
     "developerName": "DansUGC",
     "category": "Productivity",
     "capabilities": [
@@ -38,7 +38,7 @@
     "defaultPrompt": [
       "Make 3 UGC ads for this app with DansUGC ReelClaw using the demo in ./demo.mp4.",
       "I'm not sure what reels to make for this app. Suggest viral formats, then make 2 ads.",
-      "Make 5 hook variations of my last ReelClaw ad with snapchat-style captions."
+      "Make 5 hook variations of my last ReelClaw ad as one batch."
     ]
   }
 }
