@@ -4,8 +4,9 @@
 #   curl -fsSL https://raw.githubusercontent.com/dansugc/reelclaw/main/codex/install.sh | sh
 #
 # What it does (safe to re-run; no sudo):
-#   1. Copies the skill into ~/.agents/skills/reelclaw (Codex's user skills directory) and
-#      removes the retired ~/.agents/skills/reelclaw-ads skill if present.
+#   1. Copies the skill into ~/.agents/skills/reelclaw (Codex's user skills directory), replacing
+#      the whole folder so files dropped in a newer version (e.g. the 2.x references/ and scripts/)
+#      don't linger, and removes the retired ~/.agents/skills/reelclaw-ads skill if present.
 #   2. If the `codex` CLI is installed and no `dansugc` MCP server is configured, adds it:
 #        codex mcp add dansugc --url https://dansugc.com/mcp
 #   3. Prints next steps (OAuth login).
@@ -26,21 +27,13 @@ SKILLS_DIR="${REELCLAW_SKILLS_DIR:-${HOME}/.agents/skills}"
 DEST="${SKILLS_DIR}/${SKILL_NAME}"
 MCP_URL="https://dansugc.com/mcp"
 
-# Single source of truth: the same SKILL.md the Claude Code plugin ships.
+# Single source of truth: the same SKILL.md the Claude Code plugin ships. Since 3.0 the generic
+# craft (brief, hooks, footage, music, QA, variants) lives in the reelclaw-playbook skill that every
+# reelclaw-studio/ project installs, so this skill is only the DansUGC layer.
 FILES="SKILL.md
-references/product-brief.md
-references/hooks.md
-references/research.md
-references/footage.md
-references/templates.md
-references/qa-checklist.md
-references/hyperframes-editing.md
-references/publishing.md
 references/errors.md
 references/tools.md
-references/music.md
-scripts/run-generator.mjs
-scripts/qa-frames.sh
+references/publishing.md
 agents/openai.yaml"
 
 say() { printf '%s\n' "$*"; }
@@ -73,9 +66,10 @@ for f in $FILES; do
 done
 
 head -n 1 "${STAGE}/SKILL.md" | grep -q '^---' || die "downloaded SKILL.md looks wrong (no frontmatter)"
-chmod +x "${STAGE}/scripts/"* 2>/dev/null || true
 
-# Replace any previous install in one step (idempotent; never leaves a half-written skill).
+# Replace any previous install in one step (idempotent; never leaves a half-written skill). The old
+# folder is removed as a whole, so stale files from an earlier version (2.x references/, scripts/)
+# go with it; only the files listed in FILES remain.
 mkdir -p "$SKILLS_DIR"
 if [ -d "$DEST" ]; then
   rm -rf "${DEST}.old"
@@ -83,7 +77,7 @@ if [ -d "$DEST" ]; then
 fi
 mv "$STAGE" "$DEST"
 rm -rf "${DEST}.old"
-say "  skill -> ${DEST}"
+say "  skill -> ${DEST} ($(printf '%s\n' "$FILES" | wc -l | tr -d ' ') files)"
 
 # ReelClaw 2.0 replaced the `reelclaw-ads` skill with `reelclaw`; drop the old one so Codex
 # doesn't load two skills that disagree (the old one calls removed MCP render tools).
@@ -120,7 +114,8 @@ Done. Next steps:
   1. Log in with your DansUGC account (OAuth, opens your browser; API keys don't work on MCP):
        codex mcp login dansugc
   2. Restart Codex (or start a new session) so it picks up the skill.
-  3. In your project, ask (needs Node 22+ and ffmpeg; reels are edited and rendered locally):
+  3. In your project, ask (needs Node 22+ and ffmpeg; reels are edited and rendered locally in
+     ./reelclaw-studio/ with the reelclaw engine, which the skill installs on first use):
        \$reelclaw Make 3 UGC ads for this app. Use the demo in ./demo.mp4.
 
 Works on any DansUGC account, no plan needed; you pay as you go from DansUGC credits. Editing and

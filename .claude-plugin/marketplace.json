@@ -1,6 +1,6 @@
 {
   "name": "dansugc",
-  "description": "DansUGC plugins for coding agents: turn the product in your repo into UGC reaction + demo ads with real human creators.",
+  "description": "DansUGC plugins for coding agents: turn the product in your repo into short-form UGC ads with real human creators.",
   "owner": {
     "name": "DansUGC",
     "email": "dan@dansugcmodels.com",
@@ -10,7 +10,7 @@
     {
       "name": "reelclaw",
       "source": "./plugins/reelclaw",
-      "description": "Make TikTok/Reels UGC ads for the product in your repo: real human reaction hooks + your demo, edited and rendered locally by your agent with HyperFrames templates and a frame-by-frame QA loop. Works on any DansUGC account; editing is free and only new library clips and research queries cost credits.",
+      "description": "Make TikTok/Reels UGC ads for the product in your repo: real human reaction hooks from DansUGC (or your own footage) + your demo, edited and rendered locally by your agent with the reelclaw engine (7 templates, playbook, frame-by-frame QA). Works on any DansUGC account; editing is free and only new library clips and research queries cost credits.",
       "category": "marketing",
       "tags": [
         "ugc",

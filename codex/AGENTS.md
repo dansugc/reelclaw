@@ -11,11 +11,19 @@ codex mcp add dansugc --url https://dansugc.com/mcp && codex mcp login dansugc
 curl -fsSL https://raw.githubusercontent.com/dansugc/reelclaw/main/codex/install.sh | sh
 ```
 
-How it works: you edit and render every reel on this machine with the ReelClaw HyperFrames
-templates (`npx --yes reelclaw-templates@latest …`; needs Node 22+ and ffmpeg). Render with the
-skill's `scripts/run-generator.mjs`, then look at every QA frame with `view_image` and fix before
-delivering to `./reelclaw-output/`. The `dansugc` MCP server does not render; it supplies the clip
-library, viral-format suggestions, trending music, research and posting.
+How it works: you edit and render every reel on this machine with the open-source reelclaw engine
+in one reel project, `./reelclaw-studio/` (needs Node 22+ and ffmpeg). Set it up with the skill's
+installer (`npx --yes github:danielhangan/reelclaw-templates add <template…> --dir reelclaw-studio`
+until the `reelclaw` npm package is published, then `npx --yes reelclaw@latest add …`). Then read
+`reelclaw-studio/.agents/skills/reelclaw-playbook/SKILL.md` and the template's skill in
+`reelclaw-studio/.agents/skills/<template>/` and follow them: brief → format → hooks → footage →
+music → `npx reelclaw make <template> … --draft` (renders and runs `npx reelclaw qa`) → look at every
+QA frame with `view_image` and fix (max 3 passes) → `npx reelclaw batch` for variants →
+`npx reelclaw render` → copy finals to `./reelclaw-output/`. Run `npx reelclaw …` inside
+`reelclaw-studio/`. Templates: `reaction-demo`, `wall-of-text`, `listicle`, `no-yapping`,
+`greenscreen-reaction`, `talking-head-captions`, `before-after`; my own footage works too. The
+`dansugc` MCP server does not render; it supplies the clip library, viral-format suggestions,
+trending music, research and posting.
 
 Rules:
 - Learn the product from this repo first (README, package.json, store listing, landing copy).
@@ -36,5 +44,5 @@ Rules:
   switch accounts on your own, and name the team and amount before its first spend.
 - Always show the price and wait for my explicit "yes" before buying clips (`purchase_videos` is
   two-step: quote without `expected_total_cents`, buy with it after my yes).
-- Keep `reelclaw-output/` and `reelclaw-studio/` out of git.
+- Ask before adding `reelclaw-output/` and `reelclaw-studio/` to `.gitignore`; keep them out of git.
 - Brand name is always "DansUGC". Creators are real humans, never AI.

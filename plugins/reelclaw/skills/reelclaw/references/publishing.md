@@ -1,7 +1,8 @@
 # Publishing via DansUGC Posting (only when the user asks)
 
 Posting to TikTok/Instagram through the `dansugc` MCP needs a **DansUGC posting plan** (separate
-from credits; searching/buying clips, ReelClaw, editing, and research don't need it). Never post
+from credits; searching/buying clips, ReelClaw, editing, and research don't need it). The playbook's
+`references/dansugc.md` → Publishing has the short version; this page adds the details and fixes. Never post
 without the user confirming the account(s), the caption, and the time.
 
 ## 1. Check the plan and accounts
@@ -12,7 +13,8 @@ list_posting_accounts {}          # account UUIDs, platform, username
 ```
 
 **One unique video per account.** Never post the same MP4 to several accounts; make a hook variant
-per account (a hook variant renders in seconds). Stagger multiple accounts by ~5 minutes.
+per account (`npx reelclaw make <template> --props reels/<name>.json --hook "…" --name <new>
+--draft` in `reelclaw-studio/`, or one `batch` for all of them). Stagger multiple accounts by ~5 minutes.
 
 ## 2. Upload (presign → PUT, within 5 minutes)
 
@@ -45,7 +47,7 @@ create_post {
 }
 ```
 
-Caption formula: hooks.md → "Post captions". Optional `platform_settings`, e.g.
+Caption formula: the playbook's `references/variants.md` → Post captions. Optional `platform_settings`, e.g.
 `{ tiktok: { privacy_level: "PUBLIC_TO_EVERYONE" } }`. Organic TikTok posts often do better with a
 trending sound added in the app instead of baked-in music: ask the user which they want before
 rendering.
